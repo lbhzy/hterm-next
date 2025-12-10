@@ -5,20 +5,11 @@ from PySide6.QtWidgets import *
 import sys
 import time
 import pyte
-# from winpty import PtyProcess
-
-from tty_channel import TtyChannel
 
 
-class CustomTerminal(QAbstractScrollArea):
+class Terminal(QAbstractScrollArea):
     def __init__(self, parent=None):
         super().__init__(parent)
-
-        self.tty = TtyChannel('shell', 'zsh')
-        self.tty.open()
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.read_tty)
-        self.timer.start(10)
 
         self.screen = pyte.Screen(80, 30)
         # 创建一个流解析器，并将其绑定到屏幕
@@ -47,12 +38,13 @@ class CustomTerminal(QAbstractScrollArea):
         self.blink_timer.timeout.connect(self.toggle_cursor)
         self.blink_timer.start(500)
 
-    def read_tty(self):
-        text = self.tty.read_non_blocking(1024)
-        if text:
-            print('recv:', text.encode())
-            self.stream.feed(text)
-            self.viewport().update()
+    def feed(self, text: str):
+        """向终端喂要显示的数据"""
+        self.stream.feed(text)
+
+    def send(self, text: str):
+        """用户通过终端发出的数据"""
+        self.feed(text)
 
     def toggle_cursor(self):
         self.cursor_visible = not self.cursor_visible
@@ -121,9 +113,8 @@ class CustomTerminal(QAbstractScrollArea):
             text = '\x1b[D'
 
         if text:
-            # self.stream.feed(text)
             print('send:', text.encode())
-            self.tty.write(text)
+            self.send(text)
         else:
             super().keyPressEvent(event)
 
@@ -159,13 +150,12 @@ class CustomTerminal(QAbstractScrollArea):
         cols = int(self.viewport().width()/self.char_width)
         print(lines, cols)
         self.screen.resize(lines, cols)
-        self.tty.resize(lines, cols)
         super().resizeEvent(event)
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = CustomTerminal()
+    window = Terminal()
     window.resize(600, 400)
     window.show()
     sys.exit(app.exec())
