@@ -10,8 +10,8 @@ from terminal import Terminal
 
 
 class Session(Terminal):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.tty = TtyChannel('shell', 'zsh')
         self.tty.open()
 

@@ -5,12 +5,14 @@ from PySide6.QtWidgets import *
 import qtawesome as qta
 
 from quick import QuickBar
+from session import Session
 from session_list import SessionListWidget
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.setWindowOpacity(0.95)
         self.resize(QGuiApplication.primaryScreen().size() * 0.7)
         self.menu_bar = self.menuBar()
         self.menu1 = QMenu('menu1')
@@ -32,7 +34,7 @@ class MainWindow(QMainWindow):
         toolbar.setMovable(False)
         # 设置按钮
         action = QAction('setting', self)
-        action.setIcon(qta.icon('ri.settings-2-line'))
+        action.setIcon(qta.icon('ri.settings-line'))
         # action.setIconText('设置')
         action.triggered.connect(lambda: print('open setting'))
         toolbar.addAction(action)
@@ -54,23 +56,22 @@ class MainWindow(QMainWindow):
         toolbar.addAction(action)
 
     def setup_quickbar(self):
-        quickbar = QuickBar()
-        self.addToolBar(Qt.ToolBarArea.BottomToolBarArea, quickbar)
+        self.quickbar = QuickBar()
+        self.addToolBar(Qt.ToolBarArea.BottomToolBarArea, self.quickbar)
 
     def setup_list(self):
         dock = SessionListWidget(self)
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, dock)
 
-        session_widget = QTabWidget(self)
-        self.setCentralWidget(session_widget)
+        session = Session(self)
+        self.quickbar.command_ready.connect(session.send)
+        self.setCentralWidget(session)
 
 
 if __name__ == '__main__':
     app = QApplication()
     app.setStyle('Fusion')
     app.setApplicationName("hterm")
-    print(QStyleFactory.keys())
-    print(app.style().name())
     window = MainWindow()
     window.show()
     app.exec()
