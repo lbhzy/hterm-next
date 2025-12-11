@@ -8,12 +8,15 @@ import pyte
 
 
 class Terminal(QAbstractScrollArea):
+    data_ready = Signal(str)
+    resized = Signal(int, int)
+
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.screen = pyte.Screen(80, 30)
+        self._screen = pyte.Screen(80, 30)
         # 创建一个流解析器，并将其绑定到屏幕
-        self.stream = pyte.Stream(self.screen)
+        self.stream = pyte.Stream(self._screen)
 
         # 1. 基础配置
         self.setStyleSheet("background-color: #1e1e1e;")
@@ -23,9 +26,8 @@ class Terminal(QAbstractScrollArea):
         self.font.setStyleHint(QFont.Monospace)
         self.font_metrics = QFontMetrics(self.font)
 
-        # 缓存字符尺寸，用于网格计算
+        # 获取单个字符宽度返回整数精度不够 计算多字符平均 
         self.char_width = self.font_metrics.horizontalAdvance('W' * 10) / 10
-        print(self.char_width)
         self.line_height = self.font_metrics.height()
 
         # 4. 光标状态
@@ -43,8 +45,8 @@ class Terminal(QAbstractScrollArea):
         self.stream.feed(text)
 
     def send(self, text: str):
-        """用户通过终端发出的数据"""
-        self.feed(text)
+        """终端捕获用户输入后吐出的数据"""
+        self.data_ready.emit(text)
 
     def toggle_cursor(self):
         self.cursor_visible = not self.cursor_visible
@@ -63,7 +65,7 @@ class Terminal(QAbstractScrollArea):
 
         # 计算可视范围内的起始行和结束行
         start_line = scroll_y // self.line_height
-        self.buffer = self.screen.display
+        self.buffer = self._screen.display
         end_line = min(len(self.buffer), start_line + (viewport_height // self.line_height) + 2)
 
         # --- 绘制文本 ---
@@ -80,8 +82,8 @@ class Terminal(QAbstractScrollArea):
 
         # --- 绘制光标 ---
         # 只有当光标在可视区域内时才绘制
-        self.cursor_x = self.screen.cursor.x
-        self.cursor_y = self.screen.cursor.y
+        self.cursor_x = self._screen.cursor.x
+        self.cursor_y = self._screen.cursor.y
         if self.cursor_visible:
             cursor_screen_y = (self.cursor_y * self.line_height) - scroll_y
             if 0 <= cursor_screen_y < viewport_height:
@@ -146,16 +148,18 @@ class Terminal(QAbstractScrollArea):
     def resizeEvent(self, event):
         """窗口大小改变时重新计算滚动条"""
         self.update_scroll_bar()
-        lines = int(self.viewport().height()/self.line_height)
-        cols = int(self.viewport().width()/self.char_width)
-        print(lines, cols)
-        self.screen.resize(lines, cols)
+        rows = int(self.viewport().height() / self.line_height)
+        cols = int(self.viewport().width() / self.char_width)
+        self._screen.resize(rows, cols)
+        self.resized.emit(rows, cols)
         super().resizeEvent(event)
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = Terminal()
-    window.resize(600, 400)
-    window.show()
+    term = Terminal()
+    term.data_ready.connect(term.feed)
+    term.resized.connect(lambda row, cols: print(f'window size: ({row}, {cols})'))
+    term.resize(600, 400)
+    term.show()
     sys.exit(app.exec())
