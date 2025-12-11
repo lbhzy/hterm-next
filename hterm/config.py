@@ -3,7 +3,7 @@ import sys
 import toml
 
 
-class Profile:
+class Config:
     """ 配置文件管理 """
     def __init__(self, name: str):
         exec_file = sys.argv[0] if getattr(sys, 'frozen', False) else __file__
@@ -28,7 +28,7 @@ class Profile:
 
 
 if __name__ == '__main__':
-    cfg = Profile('test')
+    cfg = Config('test')
     data = {
         'project': {
             'name': 'hterm',
