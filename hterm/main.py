@@ -5,6 +5,7 @@ from PySide6.QtWidgets import *
 import qtawesome as qta
 
 from quick import QuickBar
+from session_list import SessionListWidget
 
 
 class MainWindow(QMainWindow):
@@ -16,6 +17,7 @@ class MainWindow(QMainWindow):
         self.menu1.addAction('file')
         self.menu_bar.addMenu(self.menu1)
         self.menu_bar.addAction('set')
+        self.statusBar().showMessage("准备就绪")
 
         self.setup()
 
@@ -56,14 +58,8 @@ class MainWindow(QMainWindow):
         self.addToolBar(Qt.ToolBarArea.BottomToolBarArea, quickbar)
 
     def setup_list(self):
-        dock1 = QDockWidget("会话列表", self)
-        session_list = QListWidget(self)
-        session_list.addAction('jdakl')
-        session_list.addAction('jdakl')
-        session_list.addAction('jdakl')
-        session_list.addAction('jdakl')
-        dock1.setWidget(session_list)
-        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, dock1)
+        dock = SessionListWidget(self)
+        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, dock)
 
         session_widget = QTabWidget(self)
         self.setCentralWidget(session_widget)
