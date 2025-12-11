@@ -6,7 +6,10 @@ readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
     "pyside6>=6.10.1",
-    "pyte>=0.8.2",
+    "pyte",
     "qtawesome>=1.4.0",
     "toml>=0.10.2",
 ]
+
+[tool.uv.sources]
+pyte = { git = "https://github.com/selectel/pyte.git" }
