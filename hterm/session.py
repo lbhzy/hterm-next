@@ -24,7 +24,6 @@ class Session(Terminal):
         if text:
             print('recv:', text.encode())
             self.feed(text)
-            self.viewport().update()
 
     def send(self, text):
         self.tty.write(text)
@@ -41,5 +40,6 @@ if __name__ == "__main__":
     app = QApplication()
     window = Session()
     window.resize(600, 400)
+    window.resized.connect(lambda row, cols: print(f'window size: ({row}, {cols})'))
     window.show()
     app.exec()
