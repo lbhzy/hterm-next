@@ -69,7 +69,7 @@ class Terminal(QAbstractScrollArea):
         self.verticalScrollBar().setRange(
             0, max(0, total_lines * line_height - self.viewport().height())
         )
-        self.verticalScrollBar().setPageStep(self.viewport().height())
+        self.verticalScrollBar().setSingleStep(line_height)
         self.verticalScrollBar().setValue(self.verticalScrollBar().maximum())
 
     def on_vscroll(self, value: int):
