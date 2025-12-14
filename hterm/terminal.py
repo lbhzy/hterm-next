@@ -41,21 +41,22 @@ class Terminal(QAbstractScrollArea):
         # 光标闪烁计时器
         self.blink_timer = QTimer(self)
         self.blink_timer.timeout.connect(self.toggle_cursor)
-        # self.blink_timer.start(500)
+        self.blink_timer.start(500)
 
-        self.verticalScrollBar().valueChanged.connect(self.on_vscroll)
         # self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         self.update_scrollbar()
 
 
     def feed(self, text: str):
         """向终端喂要显示的数据"""
+        print('recv:', text.encode())
         self.stream.feed(text)
         self.update_scrollbar()
         self.viewport().update()
 
     def send(self, text: str):
         """终端捕获用户输入后吐出的数据"""
+        print('send:', text.encode())
         self.data_ready.emit(text)
 
     def toggle_cursor(self):
@@ -64,24 +65,8 @@ class Terminal(QAbstractScrollArea):
         self.viewport().update()
 
     def update_scrollbar(self):
-        line_height = self.fontMetrics().height()
-        total_lines = len(self._screen.history.top) + self._screen.lines + len(self._screen.history.bottom)
-        self.verticalScrollBar().setRange(
-            0, max(0, total_lines * line_height - self.viewport().height())
-        )
-        self.verticalScrollBar().setSingleStep(line_height)
+        self.verticalScrollBar().setRange(0, len(self._screen.history.top) + len(self._screen.history.bottom))
         self.verticalScrollBar().setValue(self.verticalScrollBar().maximum())
-
-    def on_vscroll(self, value: int):
-        # 将screen调整到滑块位置
-        pos = int(self.verticalScrollBar().value() / self.fontMetrics().height())
-        screen_pos = len(self._screen.history.top)
-        diff = abs(pos - screen_pos)
-        for _ in range(diff):
-            if screen_pos > pos:
-                self._screen.prev_page()
-            else:
-                self._screen.next_page()
 
     def paintEvent(self, event):
         t0 = time.time()
@@ -92,39 +77,28 @@ class Terminal(QAbstractScrollArea):
 
         line_height = self.fontMetrics().height()
         # # 将screen调整到滑块位置
-        # pos = int(self.verticalScrollBar().value() / line_height)
-        # screen_pos = len(self._screen.history.top)
-        # diff = abs(pos - screen_pos)
-        # for _ in range(diff):
-        #     if screen_pos > pos:
-        #         self._screen.prev_page()
-        #     else:
-        #         self._screen.next_page()
+        pos = self.verticalScrollBar().value()
+        screen_pos = len(self._screen.history.top)
+        diff = abs(pos - screen_pos)
+        for _ in range(diff):
+            if screen_pos > pos:
+                self._screen.prev_page()
+            else:
+                self._screen.next_page()
 
         # 绘制screen区域
-        y_offset = self.verticalScrollBar().value() % line_height
         lines = self._screen.display
         for i, line in enumerate(lines):
             y = i * line_height
             painter.drawText(
-                0, y + self.fontMetrics().ascent() - y_offset, line
+                0, y + self.fontMetrics().ascent(), line
             )
-
-        # 多绘制一行 避免下一行突然出现
-        # i = i + 1
-        # if len(self._screen.history.bottom):
-        #     self._screen.next_page()
-        #     text = self._screen.display[-1]
-        #     y = i * line_height
-        #     painter.drawText(
-        #         0, y + self.fontMetrics().ascent() - y_offset, text
-        #     )
 
         # --- 绘制光标 ---
         if self.cursor_visible and not self._screen.cursor.hidden:
             # 计算光标像素位置
             cursor_screen_x = self._screen.cursor.x * self.char_width
-            cursor_screen_y = self._screen.cursor.y * self.line_height - y_offset
+            cursor_screen_y = self._screen.cursor.y * self.line_height
             
             # 绘制块状光标 (半透明白色)
             painter.fillRect(
@@ -150,7 +124,6 @@ class Terminal(QAbstractScrollArea):
             text = '\x1b[D'
 
         if text:
-            print('send:', text.encode())
             self.send(text)
         else:
             super().keyPressEvent(event)

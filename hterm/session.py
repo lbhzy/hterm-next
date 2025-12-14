@@ -22,7 +22,6 @@ class Session(Terminal):
     def reading_tty(self):
         text = self.tty.read_non_blocking(1024)
         if text:
-            print('recv:', text.encode())
             self.feed(text)
 
     def send(self, text):
