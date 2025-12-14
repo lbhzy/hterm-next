@@ -8,7 +8,9 @@ import pyte
 
 
 class Terminal(QAbstractScrollArea):
-    data_ready = Signal(str)
+    # 携带用户输入或快捷命令的信号
+    input_ready = Signal(str)
+    # 终端窗口大小改变
     resized = Signal(int, int)
 
     def __init__(self, parent=None):
@@ -47,17 +49,17 @@ class Terminal(QAbstractScrollArea):
         self.update_scrollbar()
 
 
-    def feed(self, text: str):
+    def feed(self, data: str):
         """向终端喂要显示的数据"""
-        print('recv:', text.encode())
-        self.stream.feed(text)
+        print('recv:', data.encode())
+        self.stream.feed(data)
         self.update_scrollbar()
         self.viewport().update()
 
-    def send(self, text: str):
-        """终端捕获用户输入后吐出的数据"""
-        print('send:', text.encode())
-        self.data_ready.emit(text)
+    def input(self, data: str):
+        """终端输入数据"""
+        print('send:', data.encode())
+        self.input_ready.emit(data)
 
     def toggle_cursor(self):
         self.cursor_visible = not self.cursor_visible
@@ -124,7 +126,7 @@ class Terminal(QAbstractScrollArea):
             text = '\x1b[D'
 
         if text:
-            self.send(text)
+            self.input(text)
         else:
             super().keyPressEvent(event)
 
@@ -142,7 +144,7 @@ class Terminal(QAbstractScrollArea):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     term = Terminal()
-    term.data_ready.connect(term.feed)
+    term.input_ready.connect(term.feed)
     term.resized.connect(lambda row, cols: print(f'window size: ({row}, {cols})'))
     term.resize(600, 400)
     term.show()
