@@ -16,8 +16,8 @@ class LocalChannel(PtyChannel):
         self._running = True
     
     def connect(self) -> None:
-        pid, self.fd = pty.fork()
-        if pid == 0:
+        self.pid, self.fd = pty.fork()
+        if self.pid == 0:
             # 子进程执行目标程序
             os.execvp(self.progname, [self.progname])
         self.is_connected = True
@@ -27,10 +27,15 @@ class LocalChannel(PtyChannel):
         self._thread.start()
         
     def disconnect(self) -> None:
+        if not self.is_connected:
+            return
         self.is_connected = False
         self.disconnected.emit("User requested disconnect.")
         self._running = False
+        os.close(self.fd)
         self._thread.join()
+        os.kill(self.pid, termios.SIGHUP)
+        os.waitpid(self.pid, os.WNOHANG)
 
     def send_data(self, data: str) -> None:
         data_bytes = data.encode()
