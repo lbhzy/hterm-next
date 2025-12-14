@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
+    "pyserial>=3.5",
     "pyside6>=6.10.1",
     "pyte",
     "qtawesome>=1.4.0",

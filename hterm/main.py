@@ -63,7 +63,11 @@ class MainWindow(QMainWindow):
         dock = SessionListWidget(self)
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, dock)
 
-        session = Session(self)
+        local_config = {
+            'type': 'local',
+            'progname': 'zsh'
+        }
+        session = Session(local_config, parent=self)
         self.quickbar.command_ready.connect(session.terminal.input)
         self.setCentralWidget(session.terminal)
 

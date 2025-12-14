@@ -4,12 +4,40 @@ from PySide6.QtWidgets import *
 
 from terminal import Terminal
 from channel_local import LocalChannel
+from channel_serial import SerialChannel
 
 
+def create_channel(config: dict):
+    """
+    根据配置字典创建并返回相应的 Channel 实例。
+    """
+    channel_type = config.get('type')
+    
+    if channel_type == 'local':
+        progname = config.get('progname', 'bash')
+        return LocalChannel(progname)
+    
+    elif channel_type == 'serial':
+        port = config.get('port')
+        baudrate = config.get('baudrate', 9600)
+        if not port:
+            raise ValueError("Serial configuration requires a 'port'.")
+        return SerialChannel(port, baudrate)
+        
+    # elif channel_type == 'ssh':
+    #     return SshChannel(config.get('host'), config.get('user'))
+        
+    else:
+        raise ValueError(f"Unknown channel type: {channel_type}")
+    
 class Session:
-    def __init__(self, parent=None):
+    def __init__(self, config: dict, parent=None):
         self.terminal = Terminal(parent)
-        self.channel = LocalChannel('zsh')
+        try:
+            self.channel = create_channel(config)
+        except ValueError as e:
+            self.terminal.feed(f"Error creating channel: {e}")
+            raise
         
         self.terminal.input_ready.connect(self.channel.send_data)
         self.terminal.resized.connect(self.channel.send_window_size)
@@ -22,7 +50,19 @@ class Session:
 
 if __name__ == "__main__":
     app = QApplication()
-    session = Session()
+
+    local_config = {
+        'type': 'local',
+        'progname': 'zsh'
+    }
+
+    serial_config = {
+        'type': 'serial',
+        'port': '/dev/cu.debug-console',
+        'baudrate': 115200
+    }
+
+    session = Session(serial_config)
     session.terminal.resize(960, 540)
     session.terminal.show()
     app.exec()
