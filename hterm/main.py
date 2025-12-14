@@ -64,8 +64,8 @@ class MainWindow(QMainWindow):
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, dock)
 
         session = Session(self)
-        self.quickbar.command_ready.connect(session.send)
-        self.setCentralWidget(session)
+        self.quickbar.command_ready.connect(session.terminal.input)
+        self.setCentralWidget(session.terminal)
 
 
 if __name__ == '__main__':
