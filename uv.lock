@@ -18,7 +18,7 @@ dependencies = [
 requires-dist = [
     { name = "pyserial", specifier = ">=3.5" },
     { name = "pyside6", specifier = ">=6.10.1" },
-    { name = "pyte", git = "https://github.com/selectel/pyte.git" },
+    { name = "pyte", url = "https://github.com/lbhzy/pyte/archive/refs/heads/master.zip" },
     { name = "qtawesome", specifier = ">=1.4.0" },
     { name = "toml", specifier = ">=0.10.2" },
 ]
@@ -92,10 +92,14 @@ wheels = [
 [[package]]
 name = "pyte"
 version = "0.8.3.dev0"
-source = { git = "https://github.com/selectel/pyte.git#0718fa80887dc646c2121b6706b362cc8c594032" }
+source = { url = "https://github.com/lbhzy/pyte/archive/refs/heads/master.zip" }
 dependencies = [
     { name = "wcwidth" },
 ]
+sdist = { hash = "sha256:4f73ee051958d03828eebbc10413fee3a74ae48cdac2cc7fe68dd5bc0ee765e7" }
+
+[package.metadata]
+requires-dist = [{ name = "wcwidth" }]
 
 [[package]]
 name = "qtawesome"

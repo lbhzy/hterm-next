@@ -17,16 +17,19 @@ class Terminal(QAbstractScrollArea):
         super().__init__(parent)
 
         # ratio取极小值确保prev_page和next_page每次只移动一行
-        self._screen = pyte.HistoryScreen(80, 30, 99999, 0.000001)
+        self._screen = pyte.Screen(80, 30)
         self.stream = pyte.Stream(self._screen)
 
-        # 1. 基础配置
-        self.setStyleSheet("background-color: #1e1e1e;")
+        # 配置背景色、前景色
+        palette = QPalette()
+        # palette.setColor(QPalette.Window, QColor('#1C1E26'))
+        palette.setColor(QPalette.Base, QColor('#1C1E26'))
+        palette.setColor(QPalette.Text, QColor("#FDF0ED"))
+        self.viewport().setPalette(palette)
        
         # 2. 字体配置 (必须是等宽字体)
         # font = QFontDatabase.systemFont(QFontDatabase.FixedFont)
         font = self.font()
-        print(font.family())
         font.setFamily('Cascadia Mono')
         font.setPointSize(16)
         self.setFont(font)
@@ -67,7 +70,7 @@ class Terminal(QAbstractScrollArea):
         self.viewport().update()
 
     def update_scrollbar(self):
-        self.verticalScrollBar().setRange(0, len(self._screen.history.top) + len(self._screen.history.bottom))
+        self.verticalScrollBar().setRange(0, len(self._screen.top_buffer))
         self.verticalScrollBar().setValue(self.verticalScrollBar().maximum())
 
     def paintEvent(self, event):
@@ -75,41 +78,35 @@ class Terminal(QAbstractScrollArea):
         painter = QPainter(self.viewport())
 
         # --- 绘制文本 ---
-        painter.setPen(QColor("#00FF00")) # 绿色文本
+        # painter.setPen(QColor("#FDF0ED"))
 
         line_height = self.fontMetrics().height()
-        # # 将screen调整到滑块位置
-        pos = self.verticalScrollBar().value()
-        screen_pos = len(self._screen.history.top)
-        diff = abs(pos - screen_pos)
-        for _ in range(diff):
-            if screen_pos > pos:
-                self._screen.prev_page()
-            else:
-                self._screen.next_page()
-
-        # 绘制screen区域
-        lines = self._screen.display
-        for i, line in enumerate(lines):
+        start_line = self.verticalScrollBar().value()
+        for i, line in enumerate(self._screen.all_buffer[start_line:start_line + self._screen.lines]):
             y = i * line_height
             painter.drawText(
-                0, y + self.fontMetrics().ascent(), line
+                0, 
+                y + self.fontMetrics().ascent(), 
+                "".join(line[x].data for x in range(self._screen.columns))
             )
 
         # --- 绘制光标 ---
-        if self.cursor_visible and not self._screen.cursor.hidden:
-            # 计算光标像素位置
-            cursor_screen_x = self._screen.cursor.x * self.char_width
-            cursor_screen_y = self._screen.cursor.y * self.line_height
-            
-            # 绘制块状光标 (半透明白色)
-            painter.fillRect(
-                cursor_screen_x,
-                cursor_screen_y,
-                self.char_width,
-                self.line_height,
-                QColor(255, 255, 255, 150)
-            )
+        all_lines = len(self._screen.all_buffer)
+        # 判断光标在可视范围
+        if start_line + self._screen.lines > all_lines - self._screen.lines + self._screen.cursor.y:
+            if self.cursor_visible:
+                # 计算光标像素位置
+                cursor_screen_x = self._screen.cursor.x * self.char_width
+                cursor_screen_y = self._screen.cursor.y * self.line_height
+                
+                # 绘制块状光标 (半透明白色)
+                painter.fillRect(
+                    cursor_screen_x,
+                    cursor_screen_y,
+                    self.char_width,
+                    self.line_height,
+                    QColor("#AAFDF0ED")
+                )
         # print(f'{time.time()-t0:.4f}')
 
     def keyPressEvent(self, event: QKeyEvent):

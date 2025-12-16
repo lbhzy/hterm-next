@@ -13,4 +13,4 @@ dependencies = [
 ]
 
 [tool.uv.sources]
-pyte = { git = "https://github.com/selectel/pyte.git" }
+pyte = { url = "https://github.com/lbhzy/pyte/archive/refs/heads/master.zip" }
