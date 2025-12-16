@@ -6,6 +6,17 @@ import sys
 import time
 import pyte
 
+COLOR_SCHEME = {    # Horizon Dark
+    "black":    '#16161C',
+    "red":      '#E95678',
+    "green":    '#29D398',
+    "brown":    '#FAB795',
+    "blue":     '#26BBD9',
+    "magenta":  '#EE64AE',
+    "cyan":     '#59E3E3',
+    "white":    '#FADAD1',
+    "default":  '#FDF0ED',
+}
 
 class Terminal(QAbstractScrollArea):
     # 携带用户输入或快捷命令的信号
@@ -84,11 +95,14 @@ class Terminal(QAbstractScrollArea):
         start_line = self.verticalScrollBar().value()
         for i, line in enumerate(self._screen.all_buffer[start_line:start_line + self._screen.lines]):
             y = i * line_height
-            painter.drawText(
-                0, 
-                y + self.fontMetrics().ascent(), 
-                "".join(line[x].data for x in range(self._screen.columns))
-            )
+            # print("".join(line[x].fg for x in range(self._screen.columns)))
+            for x in range(self._screen.columns):
+                painter.setPen(QColor(COLOR_SCHEME[line[x].fg]))
+                painter.drawText(
+                    x * self.char_width, 
+                    y + self.fontMetrics().ascent(), 
+                    line[x].data
+                )
 
         # --- 绘制光标 ---
         all_lines = len(self._screen.all_buffer)
