@@ -15,19 +15,22 @@ class SerialChannel(PtyChannel):
         self._running = True
     
     def connect(self) -> None:
-        self.ser = serial.Serial(
-            port=self.port,      # 串口名称
-            baudrate=self.baud,    # 波特率
-            bytesize=serial.EIGHTBITS, # 数据位
-            parity=serial.PARITY_NONE, # 校验位
-            stopbits=serial.STOPBITS_ONE, # 停止位
-            timeout=1         # 读取超时设置
-        )
-        self.is_connected = True
-        self.connected.emit(f'\r\nSerialChannel: {self.port} connected.\r\n')
+        try:
+            self.ser = serial.Serial(
+                port=self.port,      # 串口名称
+                baudrate=self.baud,    # 波特率
+                bytesize=serial.EIGHTBITS, # 数据位
+                parity=serial.PARITY_NONE, # 校验位
+                stopbits=serial.STOPBITS_ONE, # 停止位
+                timeout=0.01         # 读取超时设置
+            )
+            self.is_connected = True
+            self.connected.emit(f'\r\nSerialChannel: {self.port} connected.\r\n')
+            self._thread = threading.Thread(target=self.receive_loop, daemon=True)
+            self._thread.start()
+        except Exception as e:
+            self.disconnected.emit('{self.port} connect failed {e}')
         
-        self._thread = threading.Thread(target=self.receive_loop, daemon=True)
-        self._thread.start()
         
     def disconnect(self) -> None:
         self.is_connected = False
