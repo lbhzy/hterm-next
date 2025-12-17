@@ -4,18 +4,37 @@ from PySide6.QtWidgets import *
 
 import sys
 import time
+from typing import TypedDict
+
 import pyte
 
-COLOR_SCHEME = {    # Horizon Dark
-    "black":    '#16161C',
-    "red":      '#E95678',
-    "green":    '#29D398',
-    "brown":    '#FAB795',
-    "blue":     '#26BBD9',
-    "magenta":  '#EE64AE',
-    "cyan":     '#59E3E3',
-    "white":    '#FADAD1',
-    "default":  '#FDF0ED',
+class ThemeDict(TypedDict):
+    name: str
+    cursor: str
+    background: str
+    foreground: str
+
+DEFAULT_THEME = {
+    'name':       'Horizon Dark',
+    'black':    '#16161C',
+    'red':      '#E95678',
+    'green':    '#29D398',
+    'brown':    '#FAB795',
+    'blue':     '#26BBD9',
+    'magenta':  '#EE64AE',
+    'cyan':     '#59E3E3',
+    'white':    '#FADAD1',
+    'brightblack':    '#232530',
+    'brightred':      '#EC6A88',
+    'brightgreen':    '#3FDAA4',
+    'brightbrown':    '#FBC3A7',
+    'brightblue':     '#3FC6DE',
+    'brightmagenta':  '#F075B7',
+    'brightcyan':     '#6BE6E6',
+    'brightwhite':    '#FDF0ED',
+    'cursor':   '#FDF0ED',
+    'background': '#1C1E26',
+    'foreground': '#FDF0ED',
 }
 
 class Terminal(QAbstractScrollArea):
@@ -27,17 +46,12 @@ class Terminal(QAbstractScrollArea):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        self.theme: ThemeDict = DEFAULT_THEME
         # ratio取极小值确保prev_page和next_page每次只移动一行
         self._screen = pyte.Screen(80, 30)
         self.stream = pyte.Stream(self._screen)
-
-        # 配置背景色、前景色
-        palette = QPalette()
-        # palette.setColor(QPalette.Window, QColor('#1C1E26'))
-        palette.setColor(QPalette.Base, QColor('#1C1E26'))
-        palette.setColor(QPalette.Text, QColor("#FDF0ED"))
-        self.viewport().setPalette(palette)
        
+        self.set_theme(self.theme)
         # 2. 字体配置 (必须是等宽字体)
         # font = QFontDatabase.systemFont(QFontDatabase.FixedFont)
         font = self.font()
@@ -46,7 +60,8 @@ class Terminal(QAbstractScrollArea):
         self.setFont(font)
 
         # 获取单个字符宽度返回的整数精度不够 计算多字符平均 
-        self.char_width = self.fontMetrics().horizontalAdvance('W' * 1000) / 1000
+        # self.char_width = self.fontMetrics().horizontalAdvance('W' * 1000) / 1000
+        self.char_width = self.fontMetrics().horizontalAdvance('W')
         self.line_height = self.fontMetrics().height()
 
         # 4. 光标状态
@@ -87,21 +102,48 @@ class Terminal(QAbstractScrollArea):
     def paintEvent(self, event):
         t0 = time.time()
         painter = QPainter(self.viewport())
+        font = painter.font()
 
         # --- 绘制文本 ---
-        # painter.setPen(QColor("#FDF0ED"))
-
-        line_height = self.fontMetrics().height()
         start_line = self.verticalScrollBar().value()
         for i, line in enumerate(self._screen.all_buffer[start_line:start_line + self._screen.lines]):
-            y = i * line_height
-            # print("".join(line[x].fg for x in range(self._screen.columns)))
+            y = i * self.line_height
             for x in range(self._screen.columns):
-                painter.setPen(QColor(COLOR_SCHEME[line[x].fg]))
+                char = line[x]
+                # 前景色
+                if char.fg == 'default':
+                    color = self.theme['foreground']
+                elif char.fg in self.theme.keys():
+                    color = self.theme[char.fg]
+                else:
+                    color = '#' + char.fg
+                painter.setPen(QColor(color))
+                # 背景色
+                if char.bg == 'default':
+                    painter.setBackgroundMode(Qt.BGMode.TransparentMode)
+                else:
+                    if char.bg in self.theme.keys():
+                        color = self.theme[char.bg]
+                    else:
+                        color = '#' + char.bg
+                    painter.setBackgroundMode(Qt.BGMode.OpaqueMode)
+                    painter.setBackground(QBrush(QColor(color)))
+                # 文本属性
+                font.setBold(char.bold)
+                font.setItalic(char.italics)
+                font.setUnderline(char.underscore)
+                font.setStrikeOut(char.strikethrough)
+                painter.setFont(font)
+
+                # painter.drawText(
+                #     x * self.char_width, 
+                #     y + self.fontMetrics().ascent(), 
+                #     char.data
+                # )
                 painter.drawText(
                     x * self.char_width, 
                     y + self.fontMetrics().ascent(), 
-                    line[x].data
+                    char.data
                 )
 
         # --- 绘制光标 ---
@@ -112,14 +154,15 @@ class Terminal(QAbstractScrollArea):
                 # 计算光标像素位置
                 cursor_screen_x = self._screen.cursor.x * self.char_width
                 cursor_screen_y = self._screen.cursor.y * self.line_height
-                
-                # 绘制块状光标 (半透明白色)
+                # 绘制块状光标
+                cursor_color = QColor(self.theme['cursor'])
+                cursor_color.setAlpha(128)  # 半透明
                 painter.fillRect(
                     cursor_screen_x,
                     cursor_screen_y,
                     self.char_width,
                     self.line_height,
-                    QColor("#AAFDF0ED")
+                    cursor_color
                 )
         # print(f'{time.time()-t0:.4f}')
 
@@ -151,6 +194,14 @@ class Terminal(QAbstractScrollArea):
 
         super().resizeEvent(event)
 
+    def set_theme(self, theme: ThemeDict):
+        self.theme.update(theme)
+        palette = QPalette()
+        palette.setColor(QPalette.Window, QColor(self.theme['background']))
+        palette.setColor(QPalette.Base, QColor(self.theme['background']))
+        palette.setColor(QPalette.Text, QColor(self.theme['foreground']))
+        self.setPalette(palette)
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
@@ -159,4 +210,19 @@ if __name__ == "__main__":
     term.resized.connect(lambda row, cols: print(f'window size: ({row}, {cols})'))
     term.resize(600, 400)
     term.show()
+    theme = {    # Horizon Dark
+        'name':       'Horizon Dark',
+        'black':    '#16161C',
+        'red':      '#E95678',
+        'green':    '#29D398',
+        'brown':    '#FAB795',
+        'blue':     '#26BBD9',
+        'magenta':  '#EE64AE',
+        'cyan':     '#59E3E3',
+        'white':    '#FADAD1',
+        'cursor':   '#FDF0ED',
+        'background': '#1C1E26',
+        'foreground': '#FDF0ED',
+    }
+    term.set_theme(theme)
     sys.exit(app.exec())
