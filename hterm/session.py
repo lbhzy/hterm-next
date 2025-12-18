@@ -3,6 +3,7 @@ from PySide6.QtCore import *
 from PySide6.QtWidgets import *
 
 from terminal import Terminal
+from channel_ssh import SshChannel
 from channel_local import LocalChannel
 from channel_serial import SerialChannel
 
@@ -24,8 +25,13 @@ def create_channel(config: dict):
             raise ValueError("Serial configuration requires a 'port'.")
         return SerialChannel(port, baudrate)
         
-    # elif channel_type == 'ssh':
-    #     return SshChannel(config.get('host'), config.get('user'))
+    elif channel_type == 'ssh':
+        return SshChannel(
+            config.get('server'),
+            config.get('port'),
+            config.get('username'),
+            config.get('password')
+        )
         
     else:
         raise ValueError(f"Unknown channel type: {channel_type}")
@@ -42,7 +48,7 @@ class Session:
         self.terminal.input_ready.connect(self.channel.send_data)
         self.terminal.resized.connect(self.channel.send_window_size)
         self.channel.received.connect(self.terminal.feed)
-        self.channel.connected.connect(lambda s: self.terminal.feed(s))
+        # self.channel.connected.connect(lambda s: self.terminal.feed(s))
         self.channel.disconnected.connect(lambda s: self.terminal.feed(s))
         
         self.channel.connect()
@@ -62,7 +68,15 @@ if __name__ == "__main__":
         'baudrate': 115200
     }
 
-    session = Session(serial_config)
+    ssh_config = {
+        'type': 'ssh',
+        'server': '10.10.10.1',
+        'port': 22,
+        'username': 'root',
+        'password': 'password'
+    }
+
+    session = Session(ssh_config)
     session.terminal.resize(960, 540)
     session.terminal.show()
     app.exec()
