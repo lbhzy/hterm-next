@@ -102,6 +102,7 @@ class Terminal(QAbstractScrollArea):
     def paintEvent(self, event):
         t0 = time.time()
         painter = QPainter(self.viewport())
+        painter.setBackgroundMode(Qt.BGMode.OpaqueMode)
         font = painter.font()
 
         # --- 绘制文本 ---
@@ -110,24 +111,28 @@ class Terminal(QAbstractScrollArea):
             y = i * self.line_height
             for x in range(self._screen.columns):
                 char = line[x]
+                if char.reverse:
+                    bg_color = self.theme['foreground']
+                    fg_color = self.theme['background']
+                else:
+                    fg_color = self.theme['foreground']
+                    bg_color = self.theme['background']
                 # 前景色
                 if char.fg == 'default':
-                    color = self.theme['foreground']
+                    pass
                 elif char.fg in self.theme.keys():
-                    color = self.theme[char.fg]
+                    fg_color = self.theme[char.fg]
                 else:
-                    color = '#' + char.fg
-                painter.setPen(QColor(color))
+                    fg_color = '#' + char.fg
+                painter.setPen(QColor(fg_color))
                 # 背景色
                 if char.bg == 'default':
-                    painter.setBackgroundMode(Qt.BGMode.TransparentMode)
+                    pass
+                elif char.bg in self.theme.keys():
+                    bg_color = self.theme[char.bg]
                 else:
-                    if char.bg in self.theme.keys():
-                        color = self.theme[char.bg]
-                    else:
-                        color = '#' + char.bg
-                    painter.setBackgroundMode(Qt.BGMode.OpaqueMode)
-                    painter.setBackground(QBrush(QColor(color)))
+                    bg_color = '#' + char.bg
+                painter.setBackground(QBrush(QColor(bg_color)))
                 # 文本属性
                 font.setBold(char.bold)
                 font.setItalic(char.italics)
@@ -135,11 +140,6 @@ class Terminal(QAbstractScrollArea):
                 font.setStrikeOut(char.strikethrough)
                 painter.setFont(font)
 
-                # painter.drawText(
-                #     x * self.char_width, 
-                #     y + self.fontMetrics().ascent(), 
-                #     char.data
-                # )
                 painter.drawText(
                     x * self.char_width, 
                     y + self.fontMetrics().ascent(), 
