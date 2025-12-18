@@ -74,6 +74,11 @@ class Terminal(QAbstractScrollArea):
         self.blink_timer.timeout.connect(self.toggle_cursor)
         self.blink_timer.start(500)
 
+        self.blink_text_visible = True
+        self.text_blink_timer = QTimer(self)
+        self.text_blink_timer.timeout.connect(self.toggle_blink_text)
+        self.text_blink_timer.start(500)
+
         # self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         self.update_scrollbar()
 
@@ -94,7 +99,10 @@ class Terminal(QAbstractScrollArea):
 
     def toggle_cursor(self):
         self.cursor_visible = not self.cursor_visible
-        # 只重绘光标所在的区域，优化性能
+        self.viewport().update()
+
+    def toggle_blink_text(self):
+        self.blink_text_visible = not self.blink_text_visible
         self.viewport().update()
 
     def update_scrollbar(self):
@@ -113,6 +121,10 @@ class Terminal(QAbstractScrollArea):
             y = i * self.line_height
             for x in range(self._screen.columns):
                 char = line[x]
+                # 文本闪烁
+                if char.blink and not self.blink_text_visible:
+                    continue
+                # 反转前景色与背景色
                 if char.reverse:
                     bg_color = self.theme['foreground']
                     fg_color = self.theme['background']
@@ -136,10 +148,10 @@ class Terminal(QAbstractScrollArea):
                     bg_color = '#' + char.bg
                 painter.setBackground(QBrush(QColor(bg_color)))
                 # 文本属性
-                font.setBold(char.bold)
-                font.setItalic(char.italics)
-                font.setUnderline(char.underscore)
-                font.setStrikeOut(char.strikethrough)
+                font.setBold(char.bold)     # 加粗
+                font.setItalic(char.italics)    # 斜体
+                font.setUnderline(char.underscore)  # 下滑线
+                font.setStrikeOut(char.strikethrough)   # 删除线
                 painter.setFont(font)
 
                 painter.drawText(
