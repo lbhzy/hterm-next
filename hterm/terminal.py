@@ -83,6 +83,8 @@ class Terminal(QAbstractScrollArea):
         print('recv:', data.encode())
         self.stream.feed(data)
         self.update_scrollbar()
+        self.cursor_visible = True
+        self.blink_timer.start(500)
         self.viewport().update()
 
     def input(self, data: str):
