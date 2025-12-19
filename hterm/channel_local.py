@@ -5,7 +5,7 @@ import threading
 from channel_pty import PtyChannel
 
 if sys.platform == 'win32':
-    import pywinpty
+    from winpty import PtyProcess
 else:
     import pty
     import fcntl
