@@ -1,30 +1,38 @@
-import os
 import sys
-import toml
+from pathlib import Path
+import tomllib
+import tomli_w
+
+CONFIG_DIR_NAME = 'profiles'
+CONFIG_SUFFIX = '.toml'
 
 
 class Config:
     """ 配置文件管理 """
     def __init__(self, name: str):
-        exec_file = sys.argv[0] if getattr(sys, 'frozen', False) else __file__
-        base_dir = os.path.dirname(exec_file)
-        config_dir = os.path.join(base_dir, 'profiles')
-        self.file_path = os.path.join(config_dir, f'{name}.toml')
+        # 可执行文件路径（兼容 PyInstaller）
+        exec_path = Path(sys.argv[0]) if getattr(sys, 'frozen', False) else Path(__file__)
 
-        if not os.path.exists(config_dir):
-            os.makedirs(config_dir)
-        if not os.path.isfile(self.file_path):
-            with open(self.file_path, 'w') as f:
-                pass
+        # 基准目录
+        base_dir = exec_path.resolve().parent
+
+        # 配置文件目录
+        config_dir = base_dir / CONFIG_DIR_NAME
+        config_dir.mkdir(parents=True, exist_ok=True)
+
+        # 配置文件路径
+        self.file_path = config_dir / f'{name}{CONFIG_SUFFIX}'
+
+        # 确保文件存在
+        self.file_path.touch(exist_ok=True)
 
     def load(self):
-        with open(self.file_path, 'r', encoding='utf-8') as f:
-            data = toml.load(f)
-        return data
+        with self.file_path.open('rb') as f:
+            return tomllib.load(f)
 
     def dump(self, data):
-        with open(self.file_path, 'w', encoding='utf-8') as f:
-            toml.dump(data, f)
+        with self.file_path.open('wb') as f:
+            tomli_w.dump(data, f, multiline_strings=True)
 
 
 if __name__ == '__main__':
@@ -39,6 +47,7 @@ if __name__ == '__main__':
             'bool': True,
             'list': ['apple', 'banana'],
             'dict': {'key1': 1, 'key2': 2},
+            'str': 'hello\nworld'
         },
     }
     cfg.dump(data)

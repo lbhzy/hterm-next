@@ -11,7 +11,7 @@ dependencies = [
     "pyte",
     "pywinpty>=3.0.2 ; sys_platform == 'win32'",
     "qtawesome>=1.4.0",
-    "toml>=0.10.2",
+    "tomli-w>=1.2.0",
 ]
 
 [tool.uv.sources]
