@@ -3,7 +3,7 @@ import threading
 
 import paramiko
 
-from channel_pty import PtyChannel
+from hterm.channel.channel_pty import PtyChannel
 
 
 class SshChannel(PtyChannel):

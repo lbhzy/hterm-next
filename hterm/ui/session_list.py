@@ -2,7 +2,7 @@ from PySide6.QtGui import *
 from PySide6.QtCore import *
 from PySide6.QtWidgets import *
 
-from config import Config
+from hterm.config import Config
 
 
 class SessionListWidget(QDockWidget):
@@ -23,6 +23,5 @@ class SessionListWidget(QDockWidget):
 if __name__ == '__main__':
     app = QApplication()
     widget = SessionListWidget()
-
     widget.show()
     app.exec()

@@ -2,10 +2,8 @@ from PySide6.QtGui import *
 from PySide6.QtCore import *
 from PySide6.QtWidgets import *
 
-from terminal import Terminal
-from channel_ssh import SshChannel
-from channel_local import LocalChannel
-from channel_serial import SerialChannel
+from hterm.terminal import Terminal
+from hterm.channel import SshChannel, LocalChannel, SerialChannel
 
 
 def create_channel(config: dict):
@@ -76,7 +74,7 @@ if __name__ == "__main__":
         'password': 'password'
     }
 
-    session = Session(ssh_config)
+    session = Session(local_config)
     session.terminal.resize(960, 540)
     session.terminal.show()
     app.exec()

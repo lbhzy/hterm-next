@@ -3,7 +3,7 @@ import threading
 import serial
 import serial.tools.list_ports
 
-from channel_pty import PtyChannel
+from hterm.channel.channel_pty import PtyChannel
 
 
 class SerialChannel(PtyChannel):

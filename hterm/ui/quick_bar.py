@@ -4,7 +4,7 @@ from PySide6.QtWidgets import *
 
 import qtawesome as qta
 
-from config import Config
+from hterm.ui.quick_dialog import QuickDialog
 
 
 class QuickBar(QToolBar):
@@ -12,7 +12,7 @@ class QuickBar(QToolBar):
     
     def __init__(self):
         super().__init__('快捷命令栏')
-        self.cfg = Config('quick')
+        # self.cfg = Config('quick')
         self.setup()
 
     def setup(self):
@@ -27,16 +27,16 @@ class QuickBar(QToolBar):
         manager.triggered.connect(self.open_dialog)
         self.addAction(manager)
         
-        data = self.cfg.load()
-        if 'quick' in data:
-            for item in data['quick']:
-                button = QPushButton(item['name'], self)
-                button.setIcon(qta.icon('mdi.script-text-outline'))
-                button.setToolTip(str(item))
-                button.kind = item['kind']
-                button.content = item['content']
-                button.clicked.connect(self.on_button_clicked)
-                self.addWidget(button)
+        # data = self.cfg.load()
+        # if 'quick' in data:
+        #     for item in data['quick']:
+        #         button = QPushButton(item['name'], self)
+        #         button.setIcon(qta.icon('mdi.script-text-outline'))
+        #         button.setToolTip(str(item))
+        #         button.kind = item['kind']
+        #         button.content = item['content']
+        #         button.clicked.connect(self.on_button_clicked)
+        #         self.addWidget(button)
 
     @Slot()
     def on_button_clicked(self):
@@ -47,14 +47,6 @@ class QuickBar(QToolBar):
     def open_dialog(self):
         dialog = QuickDialog(self) 
         dialog.exec()
-
-class QuickDialog(QDialog):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.resize(QGuiApplication.primaryScreen().size() * 0.5)
-
-    def setup(self):
-        layout = QHBoxLayout(self)
 
 
 if __name__ == '__main__':

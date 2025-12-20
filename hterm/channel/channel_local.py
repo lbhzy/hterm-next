@@ -2,7 +2,7 @@ import os
 import sys
 import threading
 
-from channel_pty import PtyChannel
+from hterm.channel.channel_pty import PtyChannel
 
 if sys.platform == 'win32':
     from winpty import PtyProcess

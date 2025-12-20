@@ -1,5 +1,5 @@
 import sys
-from pathlib import Path
+import pathlib
 import tomllib
 import tomli_w
 
@@ -11,7 +11,7 @@ class Config:
     """ 配置文件管理 """
     def __init__(self, name: str):
         # 可执行文件路径（兼容 PyInstaller）
-        exec_path = Path(sys.argv[0]) if getattr(sys, 'frozen', False) else Path(__file__)
+        exec_path = pathlib.Path(sys.argv[0]) if getattr(sys, 'frozen', False) else pathlib.Path(__file__)
 
         # 基准目录
         base_dir = exec_path.resolve().parent
