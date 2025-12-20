@@ -8,40 +8,44 @@ from hterm.ui.quick_dialog import QuickDialog
 
 
 class QuickBar(QToolBar):
-    command_ready = Signal(str)
+    """ 快捷命令栏 """
+    command_ready = Signal(dict)
     
     def __init__(self):
         super().__init__('快捷命令栏')
-        # self.cfg = Config('quick')
-        self.setup()
+        self.setup_ui()
 
-    def setup(self):
-        self.setStyleSheet("""
-            QToolBar {
-                padding: 0px;
-            }
-        """)
-        self.setIconSize(QSize(20, 20))
-        manager = QAction(self)
-        manager.setIcon(qta.icon('mdi.speedometer-slow'))
-        manager.triggered.connect(self.open_dialog)
-        self.addAction(manager)
+    def setup_ui(self):
+        self.setIconSize(QSize(25, 25))
+        action = QAction(self)
+        action.setIcon(qta.icon('ph.command-bold'))
+        action.triggered.connect(self.open_dialog)
+        self.addAction(action)
         
-        # data = self.cfg.load()
-        # if 'quick' in data:
-        #     for item in data['quick']:
-        #         button = QPushButton(item['name'], self)
-        #         button.setIcon(qta.icon('mdi.script-text-outline'))
-        #         button.setToolTip(str(item))
-        #         button.kind = item['kind']
-        #         button.content = item['content']
-        #         button.clicked.connect(self.on_button_clicked)
-        #         self.addWidget(button)
+    def load_commands(self, config):
+        """ 载入快捷命令配置，生成快捷命令按钮 """
+        for action in self.actions():
+            widget = self.widgetForAction(action)
+            if isinstance(widget, QPushButton):
+                self.removeAction(action)
+
+        for cmd in config['command']:
+            button = QPushButton(cmd['name'])
+            button.setIcon(qta.icon('mdi.script-text-outline'))
+            button.setToolTip(str(cmd))
+            button.type = cmd['type']
+            button.content = cmd['content']
+            button.clicked.connect(self.on_button_clicked)
+            self.addWidget(button)
 
     @Slot()
     def on_button_clicked(self):
         button = self.sender()
-        self.command_ready.emit(button.content)
+        cmd = {
+            'type': button.type,
+            'content': button.content
+        }
+        self.command_ready.emit(cmd)
 
     @Slot()
     def open_dialog(self):
@@ -51,8 +55,28 @@ class QuickBar(QToolBar):
 
 if __name__ == '__main__':
     app = QApplication()
-    # app.setStyle('Fusion')
     bar = QuickBar()
     bar.command_ready.connect(lambda s: print(f'command: {s}'))
+    config = {
+        'command': [
+            {
+                'name': '命令1',
+                'type': 'text',
+                'content': 'echo hterm\n'
+            },
+            {
+                'name': '命令2',
+                'type': 'script',
+                'content': 'echo hterm\n'
+            },
+            {
+                'name': '命令3',
+                'type': 'text',
+                'content': 'echo hterm\n'
+            },
+        ]
+    }
+    bar.load_commands(config)
+    bar.load_commands(config)
     bar.show()
     app.exec()
