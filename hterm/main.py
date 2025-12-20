@@ -2,13 +2,28 @@ from PySide6.QtGui import *
 from PySide6.QtCore import *
 from PySide6.QtWidgets import *
 
+import importlib.util
+
 from hterm.ui import MainWindow
 from hterm.config import Config
+from hterm.session import Session
+
+
+def run_python_script_string(content):
+    """ 运行 python 脚本字符串中的 main() 函数并返回值 """
+    spec = importlib.util.spec_from_loader('script', loader=None)
+    script = importlib.util.module_from_spec(spec)
+    exec(content, script.__dict__)
+    return script.main()
 
 
 class Hterm(MainWindow):
     def __init__(self):
         super().__init__()
+
+        self.session_list.requested.connect(self.open_session)
+        self.quickbar.command_ready.connect(self.send_quick_command)
+
         load_timer = QTimer(self)
         load_timer.setSingleShot(True)
         load_timer.timeout.connect(self.load)
@@ -24,7 +39,26 @@ class Hterm(MainWindow):
             session_config = Config('session').load()
             self.session_list.load_sessions(session_config)
         except Exception as e:
-            QMessageBox.critical(self, "快捷命令加载出错", str(e))
+            QMessageBox.critical(self, "快捷命令加载出错", str(e))     
+
+    def open_session(self, config):
+        session = Session(config, self)
+        self.tabwidget.addTab(session.terminal, config['name'])
+
+    def send_quick_command(self, config):
+        terminal = self.tabwidget.currentWidget()
+        if not terminal:
+            return
+        
+        if config['type'] == 'text':
+            terminal.input(config['content'])
+        else:
+            try:
+                ret = run_python_script_string(config['content'])
+                if isinstance(ret, str):
+                    terminal.input(ret)
+            except Exception as e:
+                QMessageBox.critical(self, "执行脚本出错", str(e))
 
 
 if __name__ == '__main__':
