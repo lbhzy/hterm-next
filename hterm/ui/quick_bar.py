@@ -29,6 +29,9 @@ class QuickBar(QToolBar):
             if isinstance(widget, QPushButton):
                 self.removeAction(action)
 
+        if not config:
+            return
+        
         for cmd in config['command']:
             button = QPushButton(cmd['name'])
             button.setIcon(qta.icon('mdi.script-text-outline'))
