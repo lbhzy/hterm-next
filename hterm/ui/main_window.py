@@ -5,7 +5,7 @@ from PySide6.QtWidgets import *
 import qtawesome as qta
 
 from hterm.ui.quick_bar import QuickBar
-from hterm.ui.session_list import SessionListWidget
+from hterm.ui.session_list import SessionList
 
 
 class MainWindow(QMainWindow):
@@ -24,8 +24,8 @@ class MainWindow(QMainWindow):
         self.addToolBar(Qt.ToolBarArea.BottomToolBarArea, self.quickbar)
 
         # 会话列表
-        dock = SessionListWidget(self)
-        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, dock)
+        self.session_list = SessionList(self)
+        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.session_list)
 
         # 会话区
         self.tabwidget = QTabWidget(self)

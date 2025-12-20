@@ -19,7 +19,12 @@ class Hterm(MainWindow):
             quick_config = Config('quick').load()
             self.quickbar.load_commands(quick_config)
         except Exception as e:
-            QMessageBox.critical(self, "加载出错", str(e))
+            QMessageBox.critical(self, "快捷命令加载出错", str(e))
+        try:
+            session_config = Config('session').load()
+            self.session_list.load_sessions(session_config)
+        except Exception as e:
+            QMessageBox.critical(self, "快捷命令加载出错", str(e))
 
 
 if __name__ == '__main__':
