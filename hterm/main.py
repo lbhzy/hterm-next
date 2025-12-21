@@ -22,6 +22,7 @@ class Hterm(MainWindow):
         super().__init__()
 
         self.session_list.requested.connect(self.open_session)
+        self.tabwidget.tabCloseRequested.connect(self.close_session)
         self.quickbar.command_ready.connect(self.send_quick_command)
 
         load_timer = QTimer(self)
@@ -42,8 +43,18 @@ class Hterm(MainWindow):
             QMessageBox.critical(self, "快捷命令加载出错", str(e))     
 
     def open_session(self, config):
-        session = Session(config, self)
+        session = Session(config)
+        session.terminal.session = session
         self.tabwidget.addTab(session.terminal, config['name'])
+        session.terminal.setFocus()
+
+    def close_session(self, index):
+        terminal = self.tabwidget.widget(index)
+        session = terminal.session
+        self.tabwidget.removeTab(index)
+        terminal.session.channel.disconnect()
+        del session
+        terminal.deleteLater()
 
     def send_quick_command(self, config):
         terminal = self.tabwidget.currentWidget()

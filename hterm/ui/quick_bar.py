@@ -34,6 +34,7 @@ class QuickBar(QToolBar):
         
         for cmd in config['command']:
             button = QPushButton(cmd['name'])
+            button.setFocusPolicy(Qt.NoFocus)
             button.setIcon(qta.icon('mdi.script-text-outline'))
             button.setToolTip(str(cmd))
             button.type = cmd['type']

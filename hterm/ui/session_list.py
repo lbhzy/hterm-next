@@ -12,6 +12,7 @@ class SessionList(QDockWidget):
         super().__init__('会话列表', parent)
 
         self.list_widget = QListWidget(self)
+        self.list_widget.setFocusPolicy(Qt.NoFocus)
         self.list_widget.setSpacing(1)
         self.list_widget.itemDoubleClicked.connect(lambda item: self.requested.emit(item.session))
         self.setWidget(self.list_widget)

@@ -29,6 +29,7 @@ class MainWindow(QMainWindow):
 
         # 会话区
         self.tabwidget = QTabWidget(self)
+        self.tabwidget.setTabsClosable(True)
         self.setCentralWidget(self.tabwidget)
 
     def setup_menubar(self):
@@ -55,7 +56,7 @@ class MainWindow(QMainWindow):
         style_button.setIcon(qta.icon('ph.t-shirt'))
         style_menu = QMenu(self)
         for style in QStyleFactory.keys():
-            style_menu.addAction(style, lambda s=style: app.setStyle(s))
+            style_menu.addAction(style, lambda s=style: QApplication.instance().setStyle(s))
         style_button.setMenu(style_menu)
         style_button.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
         toolbar.addWidget(style_button)
