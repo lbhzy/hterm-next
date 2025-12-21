@@ -10,6 +10,7 @@ else:
     import pty
     import fcntl
     import struct
+    import signal
     import termios
 
 
@@ -44,10 +45,9 @@ class LocalChannel(PtyChannel):
             self.proc.close(force=True)
             self._thread.join()
         else:
-            os.close(self.fd)
-            self._thread.join()
-            os.kill(self.pid, termios.SIGHUP)
+            os.kill(self.pid, signal.SIGHUP)
             os.waitpid(self.pid, os.WNOHANG)
+            os.close(self.fd)
 
     def send_data(self, data: str) -> None:
         if sys.platform == 'win32':
@@ -68,6 +68,13 @@ class LocalChannel(PtyChannel):
             if sys.platform == 'win32':
                 data_str = self.proc.read()
             else:
-                data_bytes = os.read(self.fd, 1024)
-                data_str = data_bytes.decode("utf-8", "replace")
+                try:
+                    data_bytes = os.read(self.fd, 1024)
+                except OSError as e:
+                    break
+                if data_bytes:
+                    data_str = data_bytes.decode("utf-8", "replace")
+                else:   
+                    # read 返回空代表 fork的子进程已退出
+                    self.disconnect()
             self.received.emit(data_str)
