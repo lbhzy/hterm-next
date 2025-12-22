@@ -46,6 +46,7 @@ class Hterm(MainWindow):
         session = Session(config)
         session.terminal.session = session
         self.tabwidget.addTab(session.terminal, config['name'])
+        self.tabwidget.setCurrentIndex(self.tabwidget.indexOf(session.terminal))
         session.terminal.setFocus()
 
     def close_session(self, index):
