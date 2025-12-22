@@ -47,7 +47,6 @@ class Terminal(QAbstractScrollArea):
         super().__init__(parent)
 
         self.theme: ThemeDict = DEFAULT_THEME
-        # ratio取极小值确保prev_page和next_page每次只移动一行
         self._screen = pyte.Screen(80, 30)
         self.stream = pyte.Stream(self._screen)
        
@@ -64,9 +63,6 @@ class Terminal(QAbstractScrollArea):
         self.char_width = self.fontMetrics().horizontalAdvance('W')
         self.line_height = self.fontMetrics().height()
 
-        # 4. 光标状态
-        self.cursor_x = 0  # 字符列索引
-        self.cursor_y = 0
         self.cursor_visible = True
 
         # 光标闪烁计时器
@@ -74,17 +70,15 @@ class Terminal(QAbstractScrollArea):
         self.blink_timer.timeout.connect(self.toggle_cursor)
         self.blink_timer.start(500)
 
+        # 文本闪烁定时器
         self.blink_text_visible = True
         self.text_blink_timer = QTimer(self)
         self.text_blink_timer.timeout.connect(self.toggle_blink_text)
         self.text_blink_timer.start(500)
 
-        # self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-        self.update_scrollbar()
-
 
     def feed(self, data: str):
-        """向终端喂要显示的数据"""
+        """ 向终端喂要显示的数据 """
         print('recv:', data.encode())
         self.stream.feed(data)
         self.update_scrollbar()
@@ -93,12 +87,23 @@ class Terminal(QAbstractScrollArea):
         self.viewport().update()
 
     def input(self, data: str):
-        """终端输入数据"""
+        """ 终端输入数据 """
         print('send:', data.encode())
         self.input_ready.emit(data)
 
+    def set_theme(self, theme: ThemeDict):
+        self.theme.update(theme)
+        palette = QPalette()
+        palette.setColor(QPalette.Window, QColor(self.theme['background']))
+        palette.setColor(QPalette.Base, QColor(self.theme['background']))
+        palette.setColor(QPalette.Text, QColor(self.theme['foreground']))
+        self.setPalette(palette)
+
     def toggle_cursor(self):
-        self.cursor_visible = not self.cursor_visible
+        if self.hasFocus():
+            self.cursor_visible = not self.cursor_visible
+        else:
+            self.cursor_visible = True
         self.viewport().update()
 
     def toggle_blink_text(self):
@@ -171,12 +176,17 @@ class Terminal(QAbstractScrollArea):
                 # 绘制块状光标
                 cursor_color = QColor(self.theme['cursor'])
                 cursor_color.setAlpha(128)  # 半透明
-                painter.fillRect(
+                # 判断焦点状态
+                if self.hasFocus():
+                    painter.setPen(Qt.NoPen)
+                    painter.setBrush(cursor_color)
+                else:   
+                    painter.setBrush(Qt.NoBrush)    # 空心光标
+                painter.drawRect(
                     cursor_screen_x,
                     cursor_screen_y,
                     self.char_width,
                     self.line_height,
-                    cursor_color
                 )
         # print(f'{time.time()-t0:.4f}')
 
@@ -195,11 +205,9 @@ class Terminal(QAbstractScrollArea):
 
         if text:
             self.input(text)
-        else:
-            super().keyPressEvent(event)
 
     def resizeEvent(self, event):
-        """窗口大小改变时重新计算滚动条"""
+        """ 窗口大小改变时重新计算滚动条 """
         rows = int(self.viewport().height() / self.line_height)
         cols = int(self.viewport().width() / self.char_width)
         self._screen.resize(rows, cols)
@@ -208,13 +216,9 @@ class Terminal(QAbstractScrollArea):
 
         super().resizeEvent(event)
 
-    def set_theme(self, theme: ThemeDict):
-        self.theme.update(theme)
-        palette = QPalette()
-        palette.setColor(QPalette.Window, QColor(self.theme['background']))
-        palette.setColor(QPalette.Base, QColor(self.theme['background']))
-        palette.setColor(QPalette.Text, QColor(self.theme['foreground']))
-        self.setPalette(palette)
+    def focusNextPrevChild(self, next):
+        """ 禁止 tab 焦点切换 """
+        return False
 
 
 if __name__ == "__main__":
