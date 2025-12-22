@@ -13,43 +13,44 @@ class QuickBar(QToolBar):
     
     def __init__(self):
         super().__init__('快捷命令栏')
+        self.setMovable(False)
         self.setup_ui()
 
     def setup_ui(self):
-        self.setIconSize(QSize(25, 25))
+        self.setIconSize(QSize(18, 18))
         action = QAction(self)
-        action.setIcon(qta.icon('ph.command-bold'))
+        action.setIcon(qta.icon('mdi.speedometer'))
         action.triggered.connect(self.open_dialog)
         self.addAction(action)
         
     def load_commands(self, config):
         """ 载入快捷命令配置，生成快捷命令按钮 """
+        if not config:
+            return
         for action in self.actions():
             widget = self.widgetForAction(action)
             if isinstance(widget, QPushButton):
                 self.removeAction(action)
-
-        if not config:
-            return
         
         for cmd in config['command']:
             button = QPushButton(cmd['name'])
             button.setFocusPolicy(Qt.NoFocus)
-            button.setIcon(qta.icon('mdi.script-text-outline'))
-            button.setToolTip(str(cmd))
-            button.type = cmd['type']
-            button.content = cmd['content']
+            metrics = button.fontMetrics()
+            text_width = metrics.horizontalAdvance(button.text())
+            button.setFixedWidth(text_width + 16 + 20)
+            if cmd['type'] == 'text':
+                button.setIcon(qta.icon('ph.text-t-bold', color='green'))
+            elif cmd['type'] == 'script':
+                button.setIcon(qta.icon('ph.code-bold', color='blue'))
+            button.setToolTip(cmd['content'])
+            button.cmd = cmd
             button.clicked.connect(self.on_button_clicked)
             self.addWidget(button)
 
     @Slot()
     def on_button_clicked(self):
         button = self.sender()
-        cmd = {
-            'type': button.type,
-            'content': button.content
-        }
-        self.command_ready.emit(cmd)
+        self.command_ready.emit(button.cmd)
 
     @Slot()
     def open_dialog(self):
