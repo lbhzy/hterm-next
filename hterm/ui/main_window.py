@@ -30,6 +30,8 @@ class MainWindow(QMainWindow):
         # 会话区
         self.tabwidget = QTabWidget(self)
         self.tabwidget.setTabsClosable(True)
+        self.tabwidget.setMovable(True)
+        self.tabwidget.setDocumentMode(True)
         self.setCentralWidget(self.tabwidget)
 
     def setup_menubar(self):
@@ -64,6 +66,24 @@ class MainWindow(QMainWindow):
         # 帮助按钮
         action = QAction(self)
         action.setIcon(qta.icon('mdi6.help-circle-outline'))
+        action.triggered.connect(lambda: print('help'))
+        toolbar.addAction(action)
+
+        spacer = QWidget()
+        # 设置水平方向为 Expanding（扩张），垂直方向为 Preferred
+        spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        
+        # 将占位组件加入 Toolbar
+        toolbar.addWidget(spacer)
+
+        
+        action = QAction(self)
+        action.setIcon(qta.icon('msc.layout-sidebar-left'))
+        action.triggered.connect(lambda: print('help'))
+        toolbar.addAction(action)
+
+        action = QAction(self)
+        action.setIcon(qta.icon('msc.layout-panel'))
         action.triggered.connect(lambda: print('help'))
         toolbar.addAction(action)
 

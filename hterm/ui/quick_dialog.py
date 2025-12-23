@@ -73,14 +73,6 @@ class QuickDialog(QDialog):
 if __name__ == '__main__':
     app = QApplication()
     # app.setStyle('Fusion')
-    translator = QTranslator(app)
-    ret = translator.load(
-        QLocale("zh_CN"),
-        "qt",
-        "_",
-        QLibraryInfo.path(QLibraryInfo.TranslationsPath)
-    )
-    app.installTranslator(translator)
     dialog = QuickDialog()
     dialog.show()
     app.exec()
