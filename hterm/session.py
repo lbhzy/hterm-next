@@ -13,12 +13,12 @@ def create_channel(config: dict):
     channel_type = config.get('type')
     
     if channel_type == 'local':
-        progname = config.get('progname', 'bash')
+        progname = config.get('progname')
         return LocalChannel(progname)
     
     elif channel_type == 'serial':
         port = config.get('port')
-        baudrate = config.get('baudrate', 9600)
+        baudrate = config.get('baudrate')
         if not port:
             raise ValueError("Serial configuration requires a 'port'.")
         return SerialChannel(port, baudrate)
@@ -47,9 +47,9 @@ class Session:
         self.terminal.resized.connect(self.channel.send_window_size)
         self.channel.received.connect(self.terminal.feed)
         # self.channel.connected.connect(lambda s: self.terminal.feed(s))
-        self.channel.disconnected.connect(lambda s: self.terminal.feed(s))
+        self.channel.disconnected.connect(lambda s: self.terminal.feed(f'\r\n{s}\r\n'))
         
-        self.channel.connect()
+        self.channel.open()
 
 
 if __name__ == "__main__":
