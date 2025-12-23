@@ -1,5 +1,3 @@
-import threading
-
 import serial
 import serial.tools.list_ports
 
@@ -7,49 +5,35 @@ from hterm.channel.channel_pty import PtyChannel
 
 
 class SerialChannel(PtyChannel):
-    """串口通道"""
+    """ 串口通道 """
     def __init__(self, port: str, baud: int):
         super().__init__()
         self.port = port
         self.baud = baud
-        self._running = True
     
-    def connect(self) -> None:
-        try:
-            self.ser = serial.Serial(
-                port=self.port,      # 串口名称
-                baudrate=self.baud,    # 波特率
-                bytesize=serial.EIGHTBITS, # 数据位
-                parity=serial.PARITY_NONE, # 校验位
-                stopbits=serial.STOPBITS_ONE, # 停止位
-                timeout=0.01         # 读取超时设置
-            )
-            self.is_connected = True
-            self.connected.emit(f'\r\nSerialChannel: {self.port} connected.\r\n')
-            self._thread = threading.Thread(target=self.receive_loop, daemon=True)
-            self._thread.start()
-        except Exception as e:
-            self.disconnected.emit('{self.port} connect failed {e}')
-        
-        
-    def disconnect(self) -> None:
-        self.is_connected = False
-        self.disconnected.emit("User requested disconnect.")
-        self._running = False
-        self.ser.close()
-        self._thread.join()
+    def connect_impl(self):
+        self.ser = serial.Serial(
+            port=self.port,
+            baudrate=self.baud,
+            bytesize=serial.EIGHTBITS,
+            parity=serial.PARITY_NONE,
+            stopbits=serial.STOPBITS_ONE,
+            timeout=0.01         # 读取超时设置
+        )
 
-    def send_data(self, data: str) -> None:
+    def disconnect_impl(self):
+        self.ser.close()
+
+    def send_impl(self, data: str):
         data_bytes = data.encode()
         self.ser.write(data_bytes)
 
-    def receive_loop(self):
-        while self._running:
-            data_bytes = self.ser.read(1024)
-            if data_bytes:
-                data_str = data_bytes.decode("utf-8", "replace")
-                self.received.emit(data_str)
-
+    def recv_non_blocking_impl(self, size):
+        try:
+            data = self.ser.read(1024).decode()
+            return data
+        except Exception as e:
+            return None
 
 def list_available_ports():
     """

@@ -60,7 +60,7 @@ class PtyChannel(QObject):
             self.is_connected = True
             self.connected.emit(f'连接成功')
         except Exception as e:
-            self.disconnect_impl()
+            # self.disconnect_impl()
             self.is_connected = False
             self.disconnected.emit(f'连接失败：{e}')
 
