@@ -56,12 +56,11 @@ class LocalChannel(PtyChannel):
         if sys.platform == 'win32':
                 try:
                     data = self.proc.read(size)
-                    if data:
-                        return data
-                    else:
-                        return None
+                    return data
                 except BlockingIOError:
                     return ''
+                except EOFError
+                    return None
         else:
             r, _, _ = select.select([self.fd], [], [], 0)
             if r:
