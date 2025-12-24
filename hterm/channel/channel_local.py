@@ -59,7 +59,7 @@ class LocalChannel(PtyChannel):
                     return data
                 except BlockingIOError:
                     return ''
-                except EOFError
+                except EOFError:
                     return None
         else:
             r, _, _ = select.select([self.fd], [], [], 0)
