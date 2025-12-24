@@ -19,7 +19,7 @@ class SshChannel(PtyChannel):
     
     def connect_impl(self):
         self.ssh.connect(self.server, self.port, self.username, self.password, timeout=1)
-        self.channel = self.ssh.invoke_shell()
+        self.channel = self.ssh.invoke_shell(term='xterm-256color')
         self.channel.settimeout(0.01)   # 设置 recv 超时时间
         self.transport = self.ssh.get_transport()
         self.transport.set_keepalive(10)
@@ -42,5 +42,5 @@ class SshChannel(PtyChannel):
                 return data_str
             else:
                 return None
-        except TimeoutError as e:
+        except TimeoutError:
             return ''
