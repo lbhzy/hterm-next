@@ -14,9 +14,6 @@ dependencies = [
     "tomli-w>=1.2.0",
 ]
 
-[tool.uv.sources]
-pyte = { url = "https://github.com/lbhzy/pyte/archive/refs/heads/master.zip" }
-
 [dependency-groups]
 dev = [
     "pyinstaller>=6.17.0",
@@ -25,3 +22,6 @@ dev = [
 [tool.ruff.lint]
 # I (isort) 和 UP (语法升级)
 extend-select = ["I", "UP"]
+
+[tool.uv.sources]
+pyte = { git = "https://github.com/lbhzy/pyte.git", rev = "master" }
