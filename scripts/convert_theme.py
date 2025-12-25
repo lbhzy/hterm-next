@@ -1,4 +1,3 @@
-
 COLOR_MAP = {
     "color_01": "black",
     "color_02": "red",
@@ -8,7 +7,6 @@ COLOR_MAP = {
     "color_06": "magenta",
     "color_07": "cyan",
     "color_08": "white",
-
     "color_09": "brightblack",
     "color_10": "brightred",
     "color_11": "brightgreen",
@@ -42,8 +40,9 @@ GOGH_THEME = {
     "background": "#F7F7F7",
     "foreground": "#4A4543",
     "cursor": "#4A4543",
-    "hash": "bd77249fbed09b950664ad60f037964b937460a870636673ceece963d62c42be"
+    "hash": "bd77249fbed09b950664ad60f037964b937460a870636673ceece963d62c42be",
 }
+
 
 def convert(data: dict) -> dict:
     """Gogh 格式配色方案转换成此项目格式"""

@@ -1,16 +1,18 @@
-import time
 import threading
-from PySide6.QtCore import Signal, QObject
+import time
+
+from PySide6.QtCore import QObject, Signal
 
 
 class PtyChannel(QObject):
-    """ 伪终端通道基类 """
+    """伪终端通道基类"""
+
     # 当从远端或本地PTY接收到数据时发射
     received = Signal(str)
-    
+
     # 当连接成功建立时发射
     connected = Signal(str)
-    
+
     # 当连接断开或发生错误时发射
     disconnected = Signal(str)
 
@@ -18,19 +20,19 @@ class PtyChannel(QObject):
         super().__init__()
         self._running = False
         self.is_connected = False
-        
+
     def connect_impl(self) -> None:
-        """ 建立通道连接，需要子类实现 """
+        """建立通道连接，需要子类实现"""
         raise NotImplementedError
 
     def disconnect_impl(self) -> None:
-        """ 断开通道连接，需要子类实现 """
+        """断开通道连接，需要子类实现"""
         raise NotImplementedError
 
     def send_impl(self, data: str) -> None:
-        """ 向通道发送数据，需要子类实现 """
+        """向通道发送数据，需要子类实现"""
         raise NotImplementedError
-    
+
     def recv_non_blocking_impl(self, size: int) -> str | None:
         """
         非阻塞模式从通道读取数据。
@@ -42,7 +44,7 @@ class PtyChannel(QObject):
         raise NotImplementedError
 
     def send_window_size_impl(self, rows: int, cols: int) -> None:
-        """ 通知远端 PTY 窗口大小的改变，有些通道没有此功能可以不实现 """
+        """通知远端 PTY 窗口大小的改变，有些通道没有此功能可以不实现"""
         pass
 
     def send_window_size(self, rows: int, cols: int) -> None:
@@ -58,11 +60,11 @@ class PtyChannel(QObject):
             self._thread.start()
             # 更新状态
             self.is_connected = True
-            self.connected.emit(f'连接成功')
+            self.connected.emit("连接成功")
         except Exception as e:
             # self.disconnect_impl()
             self.is_connected = False
-            self.disconnected.emit(f'连接失败：{e}')
+            self.disconnected.emit(f"连接失败：{e}")
 
     def close(self):
         if self.is_connected:
@@ -73,7 +75,7 @@ class PtyChannel(QObject):
             self.disconnect_impl()
             # 更新状态
             self.is_connected = False
-            self.disconnected.emit('已手动断开')
+            self.disconnected.emit("已手动断开")
 
     def send_data(self, data: str):
         if self.is_connected:
@@ -87,8 +89,8 @@ class PtyChannel(QObject):
             data = self.recv_non_blocking_impl(10000)
             if data:
                 self.received.emit(data)
-            elif data == None:
+            elif data is None:
                 self.disconnect_impl()
                 self._running = False
                 self.is_connected = False
-                self.disconnected.emit('已断开')
+                self.disconnected.emit("已断开")

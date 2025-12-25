@@ -1,17 +1,24 @@
-from PySide6.QtGui import *
-from PySide6.QtCore import *
-from PySide6.QtWidgets import *
-
 import importlib.util
 
-from hterm.ui import MainWindow
+from PySide6.QtCore import (
+    QLibraryInfo,
+    QLocale,
+    QTimer,
+    QTranslator,
+)
+from PySide6.QtWidgets import (
+    QApplication,
+    QMessageBox,
+)
+
 from hterm.config import Config
 from hterm.session import Session
+from hterm.ui import MainWindow
 
 
 def run_python_script_string(content):
-    """ 运行 python 脚本字符串中的 main() 函数并返回值 """
-    spec = importlib.util.spec_from_loader('script', loader=None)
+    """运行 python 脚本字符串中的 main() 函数并返回值"""
+    spec = importlib.util.spec_from_loader("script", loader=None)
     script = importlib.util.module_from_spec(spec)
     exec(content, script.__dict__)
     return script.main()
@@ -32,20 +39,20 @@ class Hterm(MainWindow):
 
     def load(self):
         try:
-            quick_config = Config('quick').load()
+            quick_config = Config("quick").load()
             self.quickbar.load_commands(quick_config)
         except Exception as e:
             QMessageBox.critical(self, "快捷命令加载出错", str(e))
         try:
-            session_config = Config('session').load()
+            session_config = Config("session").load()
             self.session_list.load_sessions(session_config)
         except Exception as e:
-            QMessageBox.critical(self, "快捷命令加载出错", str(e))     
+            QMessageBox.critical(self, "快捷命令加载出错", str(e))
 
     def open_session(self, config):
         session = Session(config)
         session.terminal.session = session
-        self.tabwidget.addTab(session.terminal, config['name'])
+        self.tabwidget.addTab(session.terminal, config["name"])
         self.tabwidget.setCurrentIndex(self.tabwidget.indexOf(session.terminal))
         session.terminal.setFocus()
 
@@ -61,29 +68,26 @@ class Hterm(MainWindow):
         terminal = self.tabwidget.currentWidget()
         if not terminal:
             return
-        
-        if config['type'] == 'text':
-            terminal.input(config['content'])
+
+        if config["type"] == "text":
+            terminal.input(config["content"])
         else:
             try:
-                ret = run_python_script_string(config['content'])
+                ret = run_python_script_string(config["content"])
                 if isinstance(ret, str):
                     terminal.input(ret)
             except Exception as e:
                 QMessageBox.critical(self, "执行脚本出错", str(e))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app = QApplication()
-    app.setStyle('Fusion')
+    app.setStyle("Fusion")
     app.setApplicationName("hterm")
     # 设置中文
     translator = QTranslator(app)
     translator.load(
-        QLocale("zh_CN"),
-        "qt",
-        "_",
-        QLibraryInfo.path(QLibraryInfo.TranslationsPath)
+        QLocale("zh_CN"), "qt", "_", QLibraryInfo.path(QLibraryInfo.TranslationsPath)
     )
     app.installTranslator(translator)
 

@@ -1,17 +1,29 @@
-from PySide6.QtGui import *
-from PySide6.QtCore import *
-from PySide6.QtWidgets import *
-
 import qtawesome as qta
+from PySide6.QtCore import QGuiApplication
+from PySide6.QtWidgets import (
+    QApplication,
+    QComboBox,
+    QDialog,
+    QDialogButtonBox,
+    QFormLayout,
+    QHBoxLayout,
+    QLineEdit,
+    QListWidget,
+    QPlainTextEdit,
+    QPushButton,
+    QToolButton,
+    QVBoxLayout,
+)
 
 
 class QuickDialog(QDialog):
-    """ 快捷命令管理窗口 """
+    """快捷命令管理窗口"""
+
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle('快捷命令管理')
+        self.setWindowTitle("快捷命令管理")
         self.resize(QGuiApplication.primaryScreen().size() * 0.5)
-        
+
         self.setup_ui()
 
     def setup_ui(self):
@@ -26,17 +38,17 @@ class QuickDialog(QDialog):
         self.list_widget = QListWidget()
         self.list_widget.setSpacing(1)
         self.list_widget.setMaximumWidth(160)
-        
+
         # 工具区
         tool_layout = QHBoxLayout()
         btn_add = QToolButton()
-        btn_add.setIcon(qta.icon('ri.add-line'))
+        btn_add.setIcon(qta.icon("ri.add-line"))
         btn_remove = QToolButton()
-        btn_remove.setIcon(qta.icon('ri.subtract-line'))
+        btn_remove.setIcon(qta.icon("ri.subtract-line"))
         btn_up = QToolButton()
-        btn_up.setIcon(qta.icon('fa5s.angle-up'))
+        btn_up.setIcon(qta.icon("fa5s.angle-up"))
         btn_down = QToolButton()
-        btn_down.setIcon(qta.icon('fa6s.angle-down'))
+        btn_down.setIcon(qta.icon("fa6s.angle-down"))
         tool_layout.addWidget(btn_add)
         tool_layout.addWidget(btn_remove)
         tool_layout.addWidget(btn_up)
@@ -54,7 +66,7 @@ class QuickDialog(QDialog):
         right_layout.addRow("标签：", self.label_edit)
         right_layout.addRow("类型：", self.type_combo)
         right_layout.addRow("内容：", self.text_edit)
-        run_btn = QPushButton('测试输出')
+        run_btn = QPushButton("测试输出")
         right_layout.addWidget(run_btn)
 
         # 将左右加入内容区
@@ -68,9 +80,9 @@ class QuickDialog(QDialog):
 
         main_layout.addLayout(content_layout)
         main_layout.addWidget(buttons)
-        
-        
-if __name__ == '__main__':
+
+
+if __name__ == "__main__":
     app = QApplication()
     # app.setStyle('Fusion')
     dialog = QuickDialog()

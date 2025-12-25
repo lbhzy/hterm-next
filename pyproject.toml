@@ -21,3 +21,7 @@ pyte = { url = "https://github.com/lbhzy/pyte/archive/refs/heads/master.zip" }
 dev = [
     "pyinstaller>=6.17.0",
 ]
+
+[tool.ruff.lint]
+# I (isort) 和 UP (语法升级)
+extend-select = ["I", "UP"]
