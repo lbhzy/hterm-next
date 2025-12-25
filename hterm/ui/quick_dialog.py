@@ -1,5 +1,5 @@
 import qtawesome as qta
-from PySide6.QtCore import QGuiApplication
+from PySide6.QtGui import QGuiApplication
 from PySide6.QtWidgets import (
     QApplication,
     QComboBox,
