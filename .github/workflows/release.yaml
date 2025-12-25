@@ -12,6 +12,8 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
+    permissions:
+      contents: write
 
     steps:
       - name: 🔍 检出源代码
