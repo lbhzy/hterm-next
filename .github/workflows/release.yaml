@@ -1,0 +1,45 @@
+name: 🏷️ 版本发布
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  release:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+
+    steps:
+      - name: 🔍 检出源代码
+        uses: actions/checkout@v6
+
+      - name: 🚜 安装 uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: 🔨 同步依赖并打包
+        run: |
+          uv sync
+          uv run pack.py
+
+      - name: 📦 压缩成果物 (Windows)
+        if: matrix.os == 'windows-latest'
+        run: Compress-Archive -Path dist/hterm -DestinationPath "hterm_${{ github.ref_name }}_windows_x64.zip"
+
+      - name: 📦 压缩成果物 (Linux)
+        if: matrix.os != 'ubuntu-latest'
+        run: tar -czvf "hterm_${{ github.ref_name }}_linux_x64.tar.gz" -C dist/hterm .
+
+      - name: 📦 压缩成果物 (MacOS)
+        if: matrix.os != 'macos-latest'
+        run: zip -ry "hterm_${{ github.ref_name }}_macos_arm64.zip" dist/hterm.app
+
+      - name: 📢 发布到 Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: hterm_*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
