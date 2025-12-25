@@ -30,11 +30,11 @@ jobs:
         run: Compress-Archive -Path dist/hterm -DestinationPath "hterm_${{ github.ref_name }}_windows_x64.zip"
 
       - name: 📦 压缩成果物 (Linux)
-        if: matrix.os != 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest'
         run: tar -czvf "hterm_${{ github.ref_name }}_linux_x64.tar.gz" -C dist/hterm .
 
       - name: 📦 压缩成果物 (MacOS)
-        if: matrix.os != 'macos-latest'
+        if: matrix.os == 'macos-latest'
         run: zip -ry "hterm_${{ github.ref_name }}_macos_arm64.zip" dist/hterm.app
 
       - name: 📢 发布到 Release
