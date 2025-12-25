@@ -37,7 +37,7 @@ jobs:
 
       - name: 📦 压缩成果物 (MacOS)
         if: matrix.os == 'macos-latest'
-        run: zip -ry "hterm_${{ github.ref_name }}_macos_arm64.zip" dist/hterm.app
+        run: zip -ryj "hterm_${{ github.ref_name }}_macos_arm64.zip" dist/hterm.app
 
       - name: 📢 发布到 Release
         uses: softprops/action-gh-release@v2
