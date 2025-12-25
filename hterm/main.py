@@ -60,7 +60,7 @@ class Hterm(MainWindow):
         terminal = self.tabwidget.widget(index)
         session = terminal.session
         self.tabwidget.removeTab(index)
-        terminal.session.channel.disconnect()
+        terminal.session.channel.close()
         del session
         terminal.deleteLater()
 
