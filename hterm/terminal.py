@@ -204,7 +204,9 @@ class Terminal(QAbstractScrollArea):
             if self.cursor_visible:
                 # 计算光标像素位置
                 cursor_screen_x = self._screen.cursor.x * self.char_width
-                cursor_screen_y = self._screen.cursor.y * self.line_height
+                cursor_screen_y = (
+                    all_lines - self._screen.lines - start_line + self._screen.cursor.y
+                ) * self.line_height
                 # 绘制块状光标
                 cursor_color = QColor(self.theme["cursor"])
                 cursor_color.setAlpha(128)  # 半透明
