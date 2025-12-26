@@ -1,9 +1,13 @@
 import os
+import pathlib
 import shutil
 import subprocess
 import sys
 
 from PyInstaller.__main__ import run
+
+ROOT_DIR = pathlib.Path(__file__).resolve().parent
+FONT_DIR = ROOT_DIR / "hterm" / "fonts"
 
 
 def get_version_tag():
@@ -19,6 +23,7 @@ def pack():
         "-y",  # 不询问，直接替换旧成果物
         "-w",  # 不显示控制台
         "--specpath=build",  # 不需要 spec 文件，所以将其生成到 build 下
+        f"--add-data={FONT_DIR}:fonts",  # 包含字体文件
         "--name=hterm",  # 设置软件名
     ]
     if sys.platform == "win32":
