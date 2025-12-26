@@ -1,5 +1,6 @@
 import os
 import shutil
+import subprocess
 import sys
 
 from PyInstaller.__main__ import run
@@ -30,26 +31,20 @@ def compress():
     tag = get_version_tag()
     match sys.platform:
         case "win32":
-            archive = shutil.make_archive(
+            shutil.make_archive(
                 f"dist/hterm-{tag}-windows-x86_64", "zip", "dist", "hterm"
             )
         case "linux":
-            archive = shutil.make_archive(
+            shutil.make_archive(
                 f"dist/hterm-{tag}-linux-x86_64", "gztar", "dist", "hterm"
             )
         case "darwin":
-            archive = shutil.make_archive(
-                f"dist/hterm-{tag}-macos-arm64", "zip", "dist", "hterm.app"
-            )
+            cmd = ["zip", "-ry", f"hterm-{tag}-macos-arm64.zip", "hterm.app"]
+            subprocess.run(cmd, cwd="dist", check=True)
         case _:
             raise RuntimeError(f"Unsupported platform: {sys.platform}")
 
-    return archive
-
 
 if __name__ == "__main__":
-    print("开始打包...")
     pack()
-    print("开始压缩...")
-    archive = compress()
-    print(f"压缩包路径: {archive}")
+    compress()
