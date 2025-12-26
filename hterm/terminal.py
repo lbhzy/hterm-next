@@ -85,7 +85,7 @@ class Terminal(QAbstractScrollArea):
         # 2. 字体配置 (必须是等宽字体)
         # font = QFontDatabase.systemFont(QFontDatabase.FixedFont)
         font = self.font()
-        font.setFamily("Cascadia Mono")
+        font.setFamilies(["Cascadia Mono", "HarmonyOS Sans SC"])
         font.setPointSize(16)
         self.setFont(font)
 

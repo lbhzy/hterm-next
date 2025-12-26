@@ -1,4 +1,5 @@
 import importlib.util
+import pathlib
 
 from PySide6.QtCore import (
     QLibraryInfo,
@@ -6,6 +7,7 @@ from PySide6.QtCore import (
     QTimer,
     QTranslator,
 )
+from PySide6.QtGui import QFontDatabase
 from PySide6.QtWidgets import (
     QApplication,
     QMessageBox,
@@ -90,6 +92,12 @@ if __name__ == "__main__":
         QLocale("zh_CN"), "qt", "_", QLibraryInfo.path(QLibraryInfo.TranslationsPath)
     )
     app.installTranslator(translator)
+
+    # 加载字体
+    font_dir = pathlib.Path(__file__).resolve().parent / "fonts"
+    for entry in font_dir.iterdir():
+        # print("load font:", str(entry))
+        QFontDatabase.addApplicationFont(str(entry))
 
     hterm = Hterm()
     hterm.show()
