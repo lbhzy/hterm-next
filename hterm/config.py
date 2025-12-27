@@ -1,26 +1,21 @@
 import pathlib
-import sys
 import tomllib
 
 import tomli_w
+from PySide6.QtCore import QCoreApplication, QStandardPaths
 
 CONFIG_DIR_NAME = "profiles"
 CONFIG_SUFFIX = ".toml"
+QCoreApplication.setOrganizationName("lbhzy")
+QCoreApplication.setApplicationName("hterm")
 
 
 class Config:
     """配置文件管理"""
 
     def __init__(self, name: str):
-        # 可执行文件路径（兼容 PyInstaller）
-        exec_path = (
-            pathlib.Path(sys.argv[0])
-            if getattr(sys, "frozen", False)
-            else pathlib.Path(__file__)
-        )
-
-        # 基准目录
-        base_dir = exec_path.resolve().parent
+        # 程序目录
+        base_dir = pathlib.Path(self.get_dir())
 
         # 配置文件目录
         config_dir = base_dir / CONFIG_DIR_NAME
@@ -39,6 +34,10 @@ class Config:
     def dump(self, data):
         with self.file_path.open("wb") as f:
             tomli_w.dump(data, f, multiline_strings=True)
+
+    @staticmethod
+    def get_dir():
+        return QStandardPaths.writableLocation(QStandardPaths.AppDataLocation)
 
 
 if __name__ == "__main__":

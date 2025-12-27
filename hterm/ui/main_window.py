@@ -1,6 +1,6 @@
 import qtawesome as qta
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QAction, QGuiApplication
+from PySide6.QtCore import Qt, QUrl
+from PySide6.QtGui import QAction, QDesktopServices, QGuiApplication
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from hterm.config import Config
 from hterm.ui.quick_bar import QuickBar
 from hterm.ui.session_list import SessionList
 
@@ -59,7 +60,9 @@ class MainWindow(QMainWindow):
         action = QAction("setting", self)
         action.setIcon(qta.icon("ri.settings-line"))
         # action.setIconText('设置')
-        action.triggered.connect(lambda: print("open setting"))
+        action.triggered.connect(
+            lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(Config.get_dir()))
+        )
         toolbar.addAction(action)
 
         # 风格按钮
