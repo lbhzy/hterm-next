@@ -84,19 +84,20 @@ class Hterm(MainWindow):
 
 if __name__ == "__main__":
     app = QApplication()
-    app.setStyle("Fusion")
-    app.setApplicationName("hterm")
+
     # 设置中文
     translator = QTranslator(app)
     translator.load(
-        QLocale("zh_CN"), "qt", "_", QLibraryInfo.path(QLibraryInfo.TranslationsPath)
+        QLocale.Language.Chinese,
+        "qtbase",
+        "_",
+        QLibraryInfo.path(QLibraryInfo.TranslationsPath),
     )
     app.installTranslator(translator)
 
     # 加载字体
     font_dir = pathlib.Path(__file__).resolve().parent / "fonts"
     for entry in font_dir.iterdir():
-        # print("load font:", str(entry))
         QFontDatabase.addApplicationFont(str(entry))
 
     hterm = Hterm()
