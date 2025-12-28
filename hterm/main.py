@@ -6,7 +6,7 @@ from PySide6.QtCore import (
     QTimer,
     QTranslator,
 )
-from PySide6.QtGui import QFontDatabase
+from PySide6.QtGui import QFontDatabase, QIcon
 from PySide6.QtWidgets import (
     QApplication,
     QMessageBox,
@@ -77,7 +77,7 @@ class Hterm(MainWindow):
 
 if __name__ == "__main__":
     app = QApplication()
-
+    app.setWindowIcon(QIcon("icons/icon.png"))
     # 设置中文
     translator = QTranslator(app)
     translator.load(
