@@ -1,4 +1,3 @@
-import importlib.util
 import pathlib
 
 from PySide6.QtCore import (
@@ -16,14 +15,7 @@ from PySide6.QtWidgets import (
 from hterm.config import Config
 from hterm.session import Session
 from hterm.ui import MainWindow
-
-
-def run_python_script_string(content):
-    """运行 python 脚本字符串中的 main() 函数并返回值"""
-    spec = importlib.util.spec_from_loader("script", loader=None)
-    script = importlib.util.module_from_spec(spec)
-    exec(content, script.__dict__)
-    return script.main()
+from hterm.utils import run_python_script_string
 
 
 class Hterm(MainWindow):
@@ -42,14 +34,15 @@ class Hterm(MainWindow):
     def load(self):
         try:
             quick_config = Config("quick").load()
-            self.quickbar.load_commands(quick_config)
+            self.quickbar.load_config(quick_config)
+            self.quickbar.config_changed.connect(lambda c: Config("quick").dump(c))
         except Exception as e:
             QMessageBox.critical(self, "快捷命令加载出错", str(e))
         try:
             session_config = Config("session").load()
             self.session_list.load_sessions(session_config)
         except Exception as e:
-            QMessageBox.critical(self, "快捷命令加载出错", str(e))
+            QMessageBox.critical(self, "会话加载出错", str(e))
 
     def open_session(self, config):
         session = Session(config)

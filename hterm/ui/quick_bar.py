@@ -1,8 +1,9 @@
 import qtawesome as qta
 from PySide6.QtCore import QSize, Qt, Signal, Slot
 from PySide6.QtGui import QAction
-from PySide6.QtWidgets import QApplication, QPushButton, QToolBar
+from PySide6.QtWidgets import QApplication, QDialog, QPushButton, QToolBar
 
+from hterm.types import QuickConfig
 from hterm.ui.quick_dialog import QuickDialog
 
 
@@ -10,29 +11,30 @@ class QuickBar(QToolBar):
     """快捷命令栏"""
 
     command_ready = Signal(dict)
+    config_changed = Signal(QuickConfig)
 
-    def __init__(self):
-        super().__init__("快捷命令栏")
-        self.setMovable(False)
+    def __init__(self, parent=None):
+        super().__init__("快捷命令栏", parent)
+
+        self.config = {}
+
         self.setup_ui()
 
     def setup_ui(self):
+        self.setMovable(False)
         self.setIconSize(QSize(18, 18))
-        action = QAction(self)
-        action.setIcon(qta.icon("mdi.speedometer"))
-        action.triggered.connect(self.open_dialog)
-        self.addAction(action)
+        self.mgr = QAction(self)
+        self.mgr.setIcon(qta.icon("mdi.speedometer"))
+        self.mgr.triggered.connect(self.open_dialog)
 
-    def load_commands(self, config):
-        """载入快捷命令配置，生成快捷命令按钮"""
-        if not config:
-            return
-        for action in self.actions():
-            widget = self.widgetForAction(action)
-            if isinstance(widget, QPushButton):
-                self.removeAction(action)
+    def load_config(self, config: QuickConfig):
+        """根据配置生成快捷命令按钮"""
+        self.clear()
+        self.addAction(self.mgr)
 
-        for cmd in config["command"]:
+        self.config = config
+        cmds = self.config.get("command", [])
+        for cmd in cmds:
             button = QPushButton(cmd["name"])
             button.setFocusPolicy(Qt.NoFocus)
             metrics = button.fontMetrics()
@@ -43,25 +45,27 @@ class QuickBar(QToolBar):
             elif cmd["type"] == "script":
                 button.setIcon(qta.icon("ph.code-bold", color="blue"))
             button.setToolTip(cmd["content"])
-            button.cmd = cmd
+            button.setProperty("data", cmd)
             button.clicked.connect(self.on_button_clicked)
             self.addWidget(button)
 
     @Slot()
     def on_button_clicked(self):
         button = self.sender()
-        self.command_ready.emit(button.cmd)
+        self.command_ready.emit(button.property("data"))
 
     @Slot()
     def open_dialog(self):
-        dialog = QuickDialog(self)
-        dialog.exec()
+        dialog = QuickDialog(self.config, self)
+        ret = dialog.exec()
+        if ret == QDialog.Accepted:
+            self.config = dialog.export_config()
+            self.load_config(self.config)
+            self.config_changed.emit(self.config)
 
 
 if __name__ == "__main__":
     app = QApplication()
-    bar = QuickBar()
-    bar.command_ready.connect(lambda s: print(f"command: {s}"))
     config = {
         "command": [
             {"name": "命令1", "type": "text", "content": "echo hterm\n"},
@@ -69,7 +73,8 @@ if __name__ == "__main__":
             {"name": "命令3", "type": "text", "content": "echo hterm\n"},
         ]
     }
-    bar.load_commands(config)
-    bar.load_commands(config)
+    bar = QuickBar()
+    bar.load_config(config)
+    bar.command_ready.connect(lambda s: print(f"command: {s}"))
     bar.show()
     app.exec()
