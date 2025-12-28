@@ -1,6 +1,6 @@
 [project]
 name = "hterm-next"
-version = "0.1.1"
+version = "0.1.3"
 description = "A terminal software"
 readme = "README.md"
 requires-python = ">=3.14"
