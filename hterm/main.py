@@ -77,7 +77,9 @@ class Hterm(MainWindow):
 
 if __name__ == "__main__":
     app = QApplication()
-    app.setWindowIcon(QIcon("icons/icon.png"))
+    base_dir = pathlib.Path(__file__).resolve().parent
+    icon_path = base_dir / "icons" / "icon-nobg.png"
+    app.setWindowIcon(QIcon(str(icon_path)))
     # 设置中文
     translator = QTranslator(app)
     translator.load(
@@ -89,7 +91,7 @@ if __name__ == "__main__":
     app.installTranslator(translator)
 
     # 加载字体
-    font_dir = pathlib.Path(__file__).resolve().parent / "fonts"
+    font_dir = base_dir / "fonts"
     for entry in font_dir.iterdir():
         QFontDatabase.addApplicationFont(str(entry))
 

@@ -9,7 +9,7 @@ from PyInstaller.__main__ import run
 ROOT_DIR = pathlib.Path(__file__).resolve().parent
 FONT_DIR = ROOT_DIR / "hterm" / "fonts"
 ICON_DIR = ROOT_DIR / "hterm" / "icons"
-ICON_PATH = ICON_DIR / "icon.png"
+ICON_PATH = ICON_DIR / "icon-nobg.png"
 
 
 def get_version_tag():
