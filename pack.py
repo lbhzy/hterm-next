@@ -12,7 +12,7 @@ TARGET = ROOT_DIR / "src" / "hterm" / "main.py"
 
 ASSETS_DIR = ROOT_DIR / "src" / "hterm" / "assets"
 
-WIN_ICON = ROOT_DIR / "src" / "hterm" / "assets" / "icons" / "icon.png"
+WIN_ICON = ROOT_DIR / "assets" / "icons" / "icon-win.png"
 MAC_ICON = ROOT_DIR / "assets" / "icons" / "icon-mac.png"
 
 
