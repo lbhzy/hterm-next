@@ -17,14 +17,13 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from hterm.types import QuickConfig
 from hterm.utils import run_python_script_string
 
 
 class QuickDialog(QDialog):
     """快捷命令管理窗口"""
 
-    def __init__(self, config: QuickConfig, parent=None):
+    def __init__(self, config: dict, parent=None):
         super().__init__(parent)
 
         self.commands = config.get("command", [])
@@ -203,7 +202,7 @@ class QuickDialog(QDialog):
                 f"输出字符串: {content}\n\n字节流格式: {content.encode()}",
             )
 
-    def export_config(self) -> QuickConfig:
+    def export_config(self) -> dict:
         """导出当前配置"""
         commands = []
 

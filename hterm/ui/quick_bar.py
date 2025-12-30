@@ -3,7 +3,6 @@ from PySide6.QtCore import QSize, Qt, Signal, Slot
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QApplication, QDialog, QPushButton, QToolBar
 
-from hterm.types import QuickConfig
 from hterm.ui.quick_dialog import QuickDialog
 
 
@@ -11,7 +10,7 @@ class QuickBar(QToolBar):
     """快捷命令栏"""
 
     command_ready = Signal(dict)
-    config_changed = Signal(QuickConfig)
+    config_changed = Signal(dict)
 
     def __init__(self, parent=None):
         super().__init__("快捷命令栏", parent)
@@ -27,7 +26,7 @@ class QuickBar(QToolBar):
         self.mgr.setIcon(qta.icon("mdi.speedometer"))
         self.mgr.triggered.connect(self.open_dialog)
 
-    def load_config(self, config: QuickConfig):
+    def load_config(self, config: dict):
         """根据配置生成快捷命令按钮"""
         self.clear()
         self.addAction(self.mgr)
