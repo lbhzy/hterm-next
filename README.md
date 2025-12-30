@@ -1,11 +1,11 @@
 # Hterm
 
 <p align="center">
-  <img src="./hterm/icons/icon-nobg.png" width="100" height="100">
+  <img src="./hterm/assets/icons/icon.png" width="100" height="100">
 </p>
 
 <p align="center">
-    <img src="https://img.shields.io/badge/python-3.14+-blue.svg" alt="Python Version">
+    <img src="https://img.shields.io/badge/python-3.14+-blue.svg">
     <img src="https://img.shields.io/github/license/lbhzy/hterm-next">
     <img src="https://img.shields.io/github/v/release/lbhzy/hterm-next">
     <img src="https://img.shields.io/badge/platform-windows-0078d7?style=flat&logo=windows">

@@ -1,4 +1,5 @@
 import pathlib
+import sys
 
 from PySide6.QtCore import (
     QLibraryInfo,
@@ -77,9 +78,13 @@ class Hterm(MainWindow):
 
 if __name__ == "__main__":
     app = QApplication()
-    base_dir = pathlib.Path(__file__).resolve().parent
-    icon_path = base_dir / "icons" / "icon-nobg.png"
-    app.setWindowIcon(QIcon(str(icon_path)))
+    assets_dir = pathlib.Path(__file__).resolve().parent / "assets"
+
+    # 设置图标
+    icon_path = assets_dir / "icons" / "icon.png"
+    if sys.platform != "darwin":
+        app.setWindowIcon(QIcon(str(icon_path)))
+
     # 设置中文
     translator = QTranslator(app)
     translator.load(
@@ -91,7 +96,7 @@ if __name__ == "__main__":
     app.installTranslator(translator)
 
     # 加载字体
-    font_dir = base_dir / "fonts"
+    font_dir = assets_dir / "fonts"
     for entry in font_dir.iterdir():
         QFontDatabase.addApplicationFont(str(entry))
 
