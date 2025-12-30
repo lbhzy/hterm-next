@@ -7,7 +7,13 @@ import sys
 from PyInstaller.__main__ import run
 
 ROOT_DIR = pathlib.Path(__file__).resolve().parent
-ASSETS_DIR = ROOT_DIR / "hterm" / "assets"
+
+TARGET = ROOT_DIR / "src" / "hterm" / "main.py"
+
+ASSETS_DIR = ROOT_DIR / "src" / "hterm" / "assets"
+
+WIN_ICON = ROOT_DIR / "src" / "hterm" / "assets" / "icons" / "icon.png"
+MAC_ICON = ROOT_DIR / "assets" / "icons" / "icon-mac.png"
 
 
 def get_version_tag():
@@ -17,7 +23,7 @@ def get_version_tag():
 
 def pack():
     params = [
-        "hterm/main.py",  # 打包目标
+        f"{TARGET}",  # 打包目标
         "-y",  # 不询问，直接替换旧成果物
         "-w",  # 不显示控制台
         "--specpath=build",  # 不需要 spec 文件，所以将其生成到 build 下
@@ -27,10 +33,10 @@ def pack():
     if sys.platform == "win32":
         params.append("--collect-data=winpty")
         # Windows 图标规格 256x256 透明背景
-        params.append(f"-i={ASSETS_DIR / 'icons' / 'icon.png'}")
+        params.append(f"-i={WIN_ICON}")
     elif sys.platform == "darwin":
         # macOS 图标规格 1024x1024 纯白背景
-        params.append(f"-i={ROOT_DIR / 'assets' / 'icons' / 'icon-mac.png'}")
+        params.append(f"-i={MAC_ICON}")
 
     run(params)
 
