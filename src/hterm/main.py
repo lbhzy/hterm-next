@@ -76,7 +76,7 @@ class Hterm(MainWindow):
                 QMessageBox.critical(self, "执行脚本出错", str(e))
 
 
-if __name__ == "__main__":
+def main():
     app = QApplication()
     assets_dir = pathlib.Path(__file__).resolve().parent / "assets"
 
@@ -103,3 +103,7 @@ if __name__ == "__main__":
     hterm = Hterm()
     hterm.show()
     app.exec()
+
+
+if __name__ == "__main__":
+    main()

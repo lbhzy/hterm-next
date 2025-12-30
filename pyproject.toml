@@ -1,5 +1,5 @@
 [project]
-name = "hterm-next"
+name = "hterm"
 version = "0.1.5"
 description = "A terminal software"
 readme = "README.md"
@@ -19,6 +19,13 @@ dev = [
     "pillow>=12.0.0",
     "pyinstaller>=6.17.0",
 ]
+
+[project.scripts]
+hterm = "hterm.main:main"
+
+[build-system]
+requires = ["uv_build>=0.9.20,<0.10.0"]
+build-backend = "uv_build"
 
 [tool.ruff.lint]
 # I (isort) 和 UP (语法升级)

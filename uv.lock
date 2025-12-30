@@ -152,9 +152,9 @@ wheels = [
 ]
 
 [[package]]
-name = "hterm-next"
+name = "hterm"
 version = "0.1.5"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "paramiko" },
     { name = "pyserial" },
