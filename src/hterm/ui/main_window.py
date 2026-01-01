@@ -56,6 +56,11 @@ class MainWindow(QMainWindow):
         toolbar = QToolBar("工具栏")
         self.addToolBar(toolbar)
         toolbar.setMovable(False)
+        # 新建会话按钮
+        self.new_session_action = QAction("新建会话", self)
+        self.new_session_action.setIcon(qta.icon("ri.folder-add-line"))
+        toolbar.addAction(self.new_session_action)
+
         # 设置按钮
         action = QAction("setting", self)
         action.setIcon(qta.icon("ri.settings-line"))
