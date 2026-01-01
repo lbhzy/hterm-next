@@ -20,6 +20,10 @@ class SessionList(QDockWidget):
         self.list_widget = QListWidget(self)
         self.list_widget.setFocusPolicy(Qt.NoFocus)
         self.list_widget.setSpacing(1)
+        self.list_widget.setDragDropMode(QListWidget.InternalMove)
+        self.list_widget.model().rowsMoved.connect(
+            lambda: self.config_changed.emit(self.get_all_sessions())
+        )
         self.list_widget.itemDoubleClicked.connect(self.request_open_session)
         self.setWidget(self.list_widget)
 
