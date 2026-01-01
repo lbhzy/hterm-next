@@ -8,12 +8,11 @@ from PySide6.QtCore import (
     QTranslator,
 )
 from PySide6.QtGui import QFontDatabase, QIcon
-from PySide6.QtWidgets import QApplication, QDialog, QMessageBox
+from PySide6.QtWidgets import QApplication, QMessageBox
 
 from hterm.config import Config
 from hterm.session import Session
 from hterm.ui import MainWindow
-from hterm.ui.session_dialog import SessionDialog
 from hterm.utils import run_python_script_string
 
 
@@ -24,7 +23,7 @@ class Hterm(MainWindow):
         self.session_list.requested.connect(self.open_session)
         self.tabwidget.tabCloseRequested.connect(self.close_session)
         self.quickbar.command_ready.connect(self.send_quick_command)
-        self.new_session_action.triggered.connect(self.new_session)
+        self.new_session_action.triggered.connect(self.session_list.new_session)
 
         load_timer = QTimer(self)
         load_timer.setSingleShot(True)
@@ -61,12 +60,6 @@ class Hterm(MainWindow):
         terminal.session.channel.close()
         del session
         terminal.deleteLater()
-
-    def new_session(self):
-        dialog = SessionDialog(parent=self)
-        if dialog.exec() == QDialog.Accepted:
-            config = dialog.get_session_config()
-            self.session_list.add_session(config)
 
     def send_quick_command(self, config):
         terminal = self.tabwidget.currentWidget()

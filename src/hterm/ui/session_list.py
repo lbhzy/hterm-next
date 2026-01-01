@@ -1,10 +1,15 @@
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import QPoint, Qt, Signal
+from PySide6.QtGui import QAction
 from PySide6.QtWidgets import (
     QApplication,
+    QDialog,
     QDockWidget,
     QListWidget,
     QListWidgetItem,
+    QMenu,
 )
+
+from hterm.ui.session_dialog import SessionDialog
 
 
 class SessionList(QDockWidget):
@@ -25,6 +30,8 @@ class SessionList(QDockWidget):
             lambda: self.config_changed.emit(self.get_all_sessions())
         )
         self.list_widget.itemDoubleClicked.connect(self.request_open_session)
+        self.list_widget.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.list_widget.customContextMenuRequested.connect(self.show_context_menu)
         self.setWidget(self.list_widget)
 
     def load_sessions(self, config: dict):
@@ -67,6 +74,65 @@ class SessionList(QDockWidget):
             item = self.list_widget.item(index)
             sessions.append(item.session)
         return {"session": sessions}
+
+    def show_context_menu(self, pos: QPoint):
+        # 获取点击位置对应的 Item
+        item = self.list_widget.itemAt(pos)
+
+        # 创建菜单对象
+        menu = QMenu(self.list_widget)
+
+        if item:
+            # --- 如果点击在具体条目上的菜单项 ---
+            edit_action = QAction("编辑会话", self.list_widget)
+            edit_action.triggered.connect(lambda: self.edit_session(item))
+
+            delete_action = QAction("删除会话", self)
+            delete_action.triggered.connect(lambda: self.delete_session(item))
+
+            connect_action = QAction("立即连接", self)
+            connect_action.triggered.connect(lambda: self.request_open_session(item))
+            # 设置为粗体，表示默认动作
+            font = connect_action.font()
+            font.setBold(True)
+            connect_action.setFont(font)
+
+            menu.addAction(connect_action)
+            menu.addSeparator()  # 分割线
+            menu.addAction(edit_action)
+            menu.addAction(delete_action)
+        else:
+            # --- 如果点击在空白处的菜单项 ---
+            add_action = QAction("新建会话", self)
+            add_action.triggered.connect(self.new_session)
+            menu.addAction(add_action)
+
+        # 3. 在鼠标光标位置显示菜单
+        # 注意要将相对坐标转换为屏幕全局坐标
+        menu.exec(self.mapToGlobal(pos))
+
+    def new_session(self):
+        """新建会话"""
+        dialog = SessionDialog(parent=self)
+        if dialog.exec() == QDialog.Accepted:
+            config = dialog.get_session_config()
+            item = QListWidgetItem(self.get_session_name(config))
+            item.session = config
+            self.list_widget.addItem(item)
+            self.config_changed.emit(self.get_all_sessions())
+
+    def edit_session(self, item: QListWidgetItem):
+        dialog = SessionDialog(item.session, parent=self)
+        if dialog.exec() == QDialog.Accepted:
+            config = dialog.get_session_config()
+            item.session = config
+            item.setText(self.get_session_name(config))
+            self.config_changed.emit(self.get_all_sessions())
+
+    def delete_session(self, item: QListWidgetItem):
+        row = self.list_widget.row(item)
+        self.list_widget.takeItem(row)
+        self.config_changed.emit(self.get_all_sessions())
 
 
 if __name__ == "__main__":
