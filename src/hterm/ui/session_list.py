@@ -1,3 +1,4 @@
+import qtawesome as qta
 from PySide6.QtCore import QPoint, Qt, Signal
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import (
@@ -10,6 +11,29 @@ from PySide6.QtWidgets import (
 )
 
 from hterm.ui.session_dialog import SessionDialog
+
+
+class SessionItem(QListWidgetItem):
+    def __init__(self, config: dict):
+        super().__init__()
+        self.session = config
+        self.load_config(config)
+
+    def load_config(self, config: dict):
+        if config["type"] == "ssh":
+            name = config["server"]
+            icon = qta.icon("mdi.ssh")
+        elif config["type"] == "serial":
+            name = config["port"]
+            icon = qta.icon("mdi.serial-port")
+        elif config["type"] == "local":
+            name = config["progname"]
+            icon = qta.icon("ri.mini-program-line")
+
+        name = config.get("name", name)
+
+        self.setText(name)
+        self.setIcon(icon)
 
 
 class SessionList(QDockWidget):
@@ -39,33 +63,20 @@ class SessionList(QDockWidget):
         self.list_widget.clear()
         sessions = config.get("session", [])
         for session in sessions:
-            item = QListWidgetItem(self.get_session_name(session))
-            item.session = session
+            item = SessionItem(session)
             self.list_widget.addItem(item)
 
     def add_session(self, config: dict):
         """新添加会话到列表"""
-        item = QListWidgetItem(self.get_session_name(config))
-        item.session = config
+        item = SessionItem(config)
         self.list_widget.addItem(item)
         self.config_changed.emit(self.get_all_sessions())
 
-    def request_open_session(self, item):
+    def request_open_session(self, item: SessionItem):
         """请求打开会话"""
         session = item.session
-        session["name"] = self.get_session_name(session)
+        session["name"] = item.text()
         self.requested.emit(session)
-
-    def get_session_name(self, config: dict) -> str:
-        name = config["name"]
-        if not name:
-            if config["type"] == "ssh":
-                name = config["server"]
-            elif config["type"] == "serial":
-                name = config["port"]
-            elif config["type"] == "local":
-                name = config["progname"]
-        return name
 
     def get_all_sessions(self) -> dict:
         """获取所有会话配置"""
@@ -116,20 +127,19 @@ class SessionList(QDockWidget):
         dialog = SessionDialog(parent=self)
         if dialog.exec() == QDialog.Accepted:
             config = dialog.get_session_config()
-            item = QListWidgetItem(self.get_session_name(config))
-            item.session = config
+            item = SessionItem(config)
             self.list_widget.addItem(item)
             self.config_changed.emit(self.get_all_sessions())
 
-    def edit_session(self, item: QListWidgetItem):
+    def edit_session(self, item: SessionItem):
         dialog = SessionDialog(item.session, parent=self)
         if dialog.exec() == QDialog.Accepted:
             config = dialog.get_session_config()
             item.session = config
-            item.setText(self.get_session_name(config))
+            item.load_config(config)
             self.config_changed.emit(self.get_all_sessions())
 
-    def delete_session(self, item: QListWidgetItem):
+    def delete_session(self, item: SessionItem):
         row = self.list_widget.row(item)
         self.list_widget.takeItem(row)
         self.config_changed.emit(self.get_all_sessions())
