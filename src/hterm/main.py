@@ -47,25 +47,23 @@ class Hterm(MainWindow):
             QMessageBox.critical(self, "会话加载出错", str(e))
 
     def open_session(self, config):
-        session = Session(config)
-        session.terminal.session = session
-        self.tabwidget.addTab(session.terminal, config["name"])
-        self.tabwidget.setCurrentIndex(self.tabwidget.indexOf(session.terminal))
+        session = Session(config, self)
+        self.tabwidget.addTab(session, config["name"])
+        self.tabwidget.setCurrentIndex(self.tabwidget.indexOf(session))
         session.terminal.setFocus()
 
     def close_session(self, index):
-        terminal = self.tabwidget.widget(index)
-        session = terminal.session
+        session: Session = self.tabwidget.widget(index)
         self.tabwidget.removeTab(index)
-        terminal.session.channel.close()
-        del session
-        terminal.deleteLater()
+        session.channel.close()
+        session.deleteLater()
 
     def send_quick_command(self, config):
-        terminal = self.tabwidget.currentWidget()
-        if not terminal:
+        session: Session = self.tabwidget.currentWidget()
+        if not session:
             return
 
+        terminal = session.terminal
         if config["type"] == "text":
             terminal.input(config["content"])
         else:

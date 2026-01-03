@@ -1,4 +1,5 @@
-from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import Signal
+from PySide6.QtWidgets import QApplication, QVBoxLayout, QWidget
 
 from hterm.channel import LocalChannel, SerialChannel, SshChannel
 from hterm.terminal import Terminal
@@ -33,17 +34,26 @@ def create_channel(config: dict):
         raise ValueError(f"Unknown channel type: {channel_type}")
 
 
-class Session:
+class Session(QWidget):
+    resized = Signal(int, int)
+
     def __init__(self, config: dict, parent=None):
-        self.terminal = Terminal(parent)
+        super().__init__(parent)
+
+        self.main_layout = QVBoxLayout(self)
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.terminal = Terminal(self)
+        self.main_layout.addWidget(self.terminal)
         try:
             self.channel = create_channel(config)
+            self.channel.setParent(self)
         except ValueError as e:
             self.terminal.feed(f"Error creating channel: {e}")
             raise
 
         self.terminal.input_ready.connect(self.channel.send_data)
         self.terminal.resized.connect(self.channel.send_window_size)
+        self.terminal.resized.connect(lambda cols, rows: self.resized.emit(cols, rows))
         self.channel.received.connect(self.terminal.feed)
         # self.channel.connected.connect(lambda s: self.terminal.feed(s))
         self.channel.disconnected.connect(lambda s: self.terminal.feed(f"\r\n{s}\r\n"))
@@ -71,6 +81,6 @@ if __name__ == "__main__":
     }
 
     session = Session(local_config)
-    session.terminal.resize(960, 540)
-    session.terminal.show()
+    session.resize(960, 540)
+    session.show()
     app.exec()
