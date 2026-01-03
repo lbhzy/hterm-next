@@ -30,7 +30,9 @@ class SessionItem(QListWidgetItem):
             name = config["progname"]
             icon = qta.icon("ri.mini-program-line")
 
-        name = config.get("name", name)
+        # 别名不为空，使用别名
+        if config["name"]:
+            name = config["name"]
 
         self.setText(name)
         self.setIcon(icon)
