@@ -3,6 +3,7 @@ from PySide6.QtCore import Qt, QUrl
 from PySide6.QtGui import QAction, QDesktopServices, QGuiApplication
 from PySide6.QtWidgets import (
     QApplication,
+    QLabel,
     QMainWindow,
     QMenu,
     QSizePolicy,
@@ -29,6 +30,7 @@ class MainWindow(QMainWindow):
     def setup_ui(self):
         self.setup_menubar()
         self.setup_toolbar()
+        self.setup_statusbar()
         # 快捷命令栏
         self.quickbar = QuickBar()
         self.addToolBar(Qt.ToolBarArea.BottomToolBarArea, self.quickbar)
@@ -43,6 +45,10 @@ class MainWindow(QMainWindow):
         self.tabwidget.setMovable(True)
         self.tabwidget.setDocumentMode(True)
         self.setCentralWidget(self.tabwidget)
+
+    def setup_statusbar(self):
+        self.terminal_label = QLabel()
+        self.statusBar().addPermanentWidget(self.terminal_label)
 
     def setup_menubar(self):
         self.menu_bar = self.menuBar()

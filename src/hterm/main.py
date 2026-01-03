@@ -48,6 +48,9 @@ class Hterm(MainWindow):
 
     def open_session(self, config):
         session = Session(config, self)
+        session.resized.connect(
+            lambda cols, rows: self.terminal_label.setText(f"终端 {cols}x{rows}")
+        )
         self.tabwidget.addTab(session, config["name"])
         self.tabwidget.setCurrentIndex(self.tabwidget.indexOf(session))
         session.terminal.setFocus()
@@ -57,6 +60,8 @@ class Hterm(MainWindow):
         self.tabwidget.removeTab(index)
         session.channel.close()
         session.deleteLater()
+        if self.tabwidget.count() == 0:
+            self.terminal_label.clear()
 
     def send_quick_command(self, config):
         session: Session = self.tabwidget.currentWidget()
