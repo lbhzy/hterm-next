@@ -32,4 +32,4 @@ build-backend = "uv_build"
 extend-select = ["I", "UP"]
 
 [tool.uv.sources]
-pyte = { git = "https://github.com/lbhzy/pyte.git", rev = "master" }
+pyte = { git = "https://github.com/lbhzy/pyte.git", rev = "34c5853" }

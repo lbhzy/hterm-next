@@ -176,7 +176,7 @@ requires-dist = [
     { name = "paramiko", specifier = ">=4.0.0" },
     { name = "pyserial", specifier = ">=3.5" },
     { name = "pyside6", specifier = ">=6.10.1" },
-    { name = "pyte", git = "https://github.com/lbhzy/pyte.git?rev=master" },
+    { name = "pyte", git = "https://github.com/lbhzy/pyte.git?rev=34c5853" },
     { name = "pywinpty", marker = "sys_platform == 'win32'", specifier = ">=3.0.2" },
     { name = "qtawesome", specifier = ">=1.4.0" },
     { name = "tomli-w", specifier = ">=1.2.0" },
@@ -422,7 +422,7 @@ wheels = [
 [[package]]
 name = "pyte"
 version = "0.8.3.dev0"
-source = { git = "https://github.com/lbhzy/pyte.git?rev=master#22b89437d263a7c6503deba33c2014ab98747e81" }
+source = { git = "https://github.com/lbhzy/pyte.git?rev=34c5853#34c5853b5408b59ea6ad4379a01860d5c06c7b74" }
 dependencies = [
     { name = "wcwidth" },
 ]

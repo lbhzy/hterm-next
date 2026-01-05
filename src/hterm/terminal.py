@@ -49,7 +49,7 @@ class Terminal(QAbstractScrollArea):
         super().__init__(parent)
 
         self.theme: ThemeDict = DEFAULT_THEME
-        self._screen = pyte.Screen(80, 30)
+        self._screen = pyte.Screen(80, 30, 99999)
         self.stream = pyte.Stream(self._screen)
 
         self.set_theme(self.theme)
