@@ -94,30 +94,25 @@ class Terminal(QAbstractScrollArea):
         self.line_height = self.fontMetrics().height()
 
         self.cursor_visible = True
-
-        # 光标闪烁计时器
-        self.blink_timer = QTimer(self)
-        self.blink_timer.timeout.connect(self.toggle_cursor)
-        self.blink_timer.start(500)
-
-        # 文本闪烁定时器
         self.blink_text_visible = True
-        self.text_blink_timer = QTimer(self)
-        self.text_blink_timer.timeout.connect(self.toggle_blink_text)
-        self.text_blink_timer.start(500)
+        self.last_input_time = 0
+
+        # 闪烁计时器 (实现光标和文本闪烁)
+        self.blink_timer = QTimer(self)
+        self.blink_timer.timeout.connect(self.toggle_blink_state)
+        self.blink_timer.start(500)
 
     def feed(self, data: str):
         """向终端喂要显示的数据"""
         print("recv:", data.encode())
         self.stream.feed(data)
         self.update_scrollbar()
-        self.cursor_visible = True
-        self.blink_timer.start(500)
         self.viewport().update()
 
     def input(self, data: str):
         """终端输入数据"""
         print("send:", data.encode())
+        self.last_input_time = time.time()
         self.input_ready.emit(data)
 
     def set_theme(self, theme: ThemeDict):
@@ -128,15 +123,19 @@ class Terminal(QAbstractScrollArea):
         palette.setColor(QPalette.Text, QColor(self.theme["foreground"]))
         self.setPalette(palette)
 
-    def toggle_cursor(self):
+    def toggle_blink_state(self):
         if self.hasFocus():
             self.cursor_visible = not self.cursor_visible
         else:
+            # 失焦后光标始终显示
             self.cursor_visible = True
-        self.viewport().update()
 
-    def toggle_blink_text(self):
+        # 连续输入过程保证光标可见
+        if time.time() - self.last_input_time < 0.5:
+            self.cursor_visible = True
+
         self.blink_text_visible = not self.blink_text_visible
+
         self.viewport().update()
 
     def update_scrollbar(self):
@@ -151,6 +150,7 @@ class Terminal(QAbstractScrollArea):
         brush = QBrush(color)  # 传入 color 保证是 BrushStyle.SolidPattern 类型
 
         # --- 绘制文本 ---
+        text_visible = True
         start_line = self.verticalScrollBar().value()
         last_char = None
         for i, line in enumerate(
@@ -185,11 +185,12 @@ class Terminal(QAbstractScrollArea):
 
                     # 已经遍历到行尾，将 data 渲染出来
                     if x == self._screen.columns - 1:
-                        painter.drawText(
-                            (x + 1 - len(data)) * self.char_width,
-                            y + self.fontMetrics().ascent(),
-                            data,
-                        )
+                        if text_visible:
+                            painter.drawText(
+                                (x + 1 - len(data)) * self.char_width,
+                                y + self.fontMetrics().ascent(),
+                                data,
+                            )
                     continue
                 else:
                     # 遇到不同格式字符
@@ -197,16 +198,20 @@ class Terminal(QAbstractScrollArea):
                     # 2. 当前字符赋值给 data，作为新格式数据打头阵
                     # 3. 重新给 painter 设置新格式
                     if data:
-                        painter.drawText(
-                            (x - len(data)) * self.char_width,
-                            y + self.fontMetrics().ascent(),
-                            data,
-                        )
+                        if text_visible:
+                            painter.drawText(
+                                (x - len(data)) * self.char_width,
+                                y + self.fontMetrics().ascent(),
+                                data,
+                            )
                     data = char.data
 
                 # 文本闪烁
                 if char.blink and not self.blink_text_visible:
-                    continue
+                    # 字符有闪烁属性且当前闪烁文本不可见时，跳过渲染
+                    text_visible = False
+                else:
+                    text_visible = True
                 # 反转前景色与背景色
                 if char.reverse:
                     bg_color = self.theme["foreground"]
