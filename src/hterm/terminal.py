@@ -4,7 +4,7 @@ from typing import TypedDict
 
 import pyte
 from PySide6.QtCore import Qt, QTimer, Signal
-from PySide6.QtGui import QBrush, QColor, QKeyEvent, QPainter, QPalette
+from PySide6.QtGui import QBrush, QColor, QKeyEvent, QMouseEvent, QPainter, QPalette
 from PySide6.QtWidgets import QAbstractScrollArea, QApplication
 
 
@@ -85,6 +85,11 @@ class Terminal(QAbstractScrollArea):
         # print("send:", data.encode())
         self.last_input_time = time.time()
         self.input_ready.emit(data)
+
+    def paste(self):
+        clipboard = QApplication.clipboard()
+        text = clipboard.text()
+        self.input(text)
 
     def set_theme(self, theme: ThemeDict):
         self.theme.update(theme)
@@ -282,6 +287,11 @@ class Terminal(QAbstractScrollArea):
     def focusNextPrevChild(self, next):
         """禁止 tab 焦点切换"""
         return False
+
+    def mousePressEvent(self, event: QMouseEvent):
+        """鼠标点击事件"""
+        if event.button() == Qt.MiddleButton:
+            self.paste()
 
 
 if __name__ == "__main__":
