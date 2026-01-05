@@ -1,40 +1,11 @@
 import sys
 import time
-from functools import wraps
 from typing import TypedDict
 
 import pyte
 from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtGui import QBrush, QColor, QKeyEvent, QPainter, QPalette
 from PySide6.QtWidgets import QAbstractScrollArea, QApplication
-
-
-def monitor(func):
-    # 初始化上一次调用的时间（闭包变量）
-    last_call_time = None
-
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        nonlocal last_call_time  # 声明使用外部嵌套作用域变量
-
-        # 1. 计算函数调用间隔
-        current_time = time.time()
-        interval = (current_time - last_call_time) * 1000 if last_call_time else 0
-        last_call_time = current_time
-
-        # 2. 计算函数执行耗时
-        start_exec = time.time()
-        result = func(*args, **kwargs)  # 执行原函数
-        end_exec = time.time()
-
-        duration = (end_exec - start_exec) * 1000
-
-        # 打印统计信息（单位：ms）
-        print(f"interval: {interval:.2f} ms cost: {duration:.2f} ms")
-
-        return result
-
-    return wrapper
 
 
 class ThemeDict(TypedDict):
@@ -104,14 +75,14 @@ class Terminal(QAbstractScrollArea):
 
     def feed(self, data: str):
         """向终端喂要显示的数据"""
-        print("recv:", data.encode())
+        # print("recv:", data.encode())
         self.stream.feed(data)
         self.update_scrollbar()
         self.viewport().update()
 
     def input(self, data: str):
         """终端输入数据"""
-        print("send:", data.encode())
+        # print("send:", data.encode())
         self.last_input_time = time.time()
         self.input_ready.emit(data)
 
