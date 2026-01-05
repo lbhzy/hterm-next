@@ -139,8 +139,16 @@ class Terminal(QAbstractScrollArea):
         self.viewport().update()
 
     def update_scrollbar(self):
+        if self.verticalScrollBar().value() == self.verticalScrollBar().maximum():
+            is_bottom = True
+        else:
+            is_bottom = False
+
         self.verticalScrollBar().setRange(0, len(self._screen.top_buffer))
-        self.verticalScrollBar().setValue(self.verticalScrollBar().maximum())
+
+        # 滚动条不在底部时，不更新值
+        if is_bottom:
+            self.verticalScrollBar().setValue(self.verticalScrollBar().maximum())
 
     def paintEvent(self, event):
         painter = QPainter(self.viewport())
