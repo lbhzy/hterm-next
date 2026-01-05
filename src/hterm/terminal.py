@@ -83,15 +83,14 @@ class Terminal(QAbstractScrollArea):
 
         self.set_theme(self.theme)
         # 2. 字体配置 (必须是等宽字体)
-        # font = QFontDatabase.systemFont(QFontDatabase.FixedFont)
         font = self.font()
         font.setFamilies(["Cascadia Mono", "HarmonyOS Sans SC"])
         font.setPointSize(16)
         self.setFont(font)
 
         # 获取单个字符宽度返回的整数精度不够 计算多字符平均
-        # self.char_width = self.fontMetrics().horizontalAdvance('W' * 1000) / 1000
-        self.char_width = self.fontMetrics().horizontalAdvance("W")
+        self.char_width = self.fontMetrics().horizontalAdvance("W" * 1000) / 1000
+        # self.char_width = self.fontMetrics().horizontalAdvance("W")
         self.line_height = self.fontMetrics().height()
 
         self.cursor_visible = True
@@ -148,15 +147,63 @@ class Terminal(QAbstractScrollArea):
         painter = QPainter(self.viewport())
         painter.setBackgroundMode(Qt.BGMode.OpaqueMode)
         font = painter.font()
+        color = QColor()
+        brush = QBrush(color)  # 传入 color 保证是 BrushStyle.SolidPattern 类型
 
         # --- 绘制文本 ---
         start_line = self.verticalScrollBar().value()
+        last_char = None
         for i, line in enumerate(
             self._screen.all_buffer[start_line : start_line + self._screen.lines]
         ):
             y = i * self.line_height
+
+            data = ""
             for x in range(self._screen.columns):
                 char = line[x]
+
+                # 判断当前字符样式是否与上一个字符完全一致
+                is_same_style = False
+                if last_char is not None:
+                    # 只有所有影响视觉的属性都一致，才能合并字符串
+                    is_same_style = (
+                        char.fg == last_char.fg
+                        and char.bg == last_char.bg
+                        and char.bold == last_char.bold
+                        and char.italics == last_char.italics
+                        and char.underscore == last_char.underscore
+                        and char.strikethrough == last_char.strikethrough
+                        and char.reverse == last_char.reverse
+                        and char.blink == last_char.blink
+                    )
+                last_char = char
+                if is_same_style:
+                    # 遇到相同格式字符
+                    # 1. 将当前字符合并进 data
+                    # 2. 直接遍历下一个字符
+                    data += char.data
+
+                    # 已经遍历到行尾，将 data 渲染出来
+                    if x == self._screen.columns - 1:
+                        painter.drawText(
+                            (x + 1 - len(data)) * self.char_width,
+                            y + self.fontMetrics().ascent(),
+                            data,
+                        )
+                    continue
+                else:
+                    # 遇到不同格式字符
+                    # 1. 渲染出之前的 data
+                    # 2. 当前字符赋值给 data，作为新格式数据打头阵
+                    # 3. 重新给 painter 设置新格式
+                    if data:
+                        painter.drawText(
+                            (x - len(data)) * self.char_width,
+                            y + self.fontMetrics().ascent(),
+                            data,
+                        )
+                    data = char.data
+
                 # 文本闪烁
                 if char.blink and not self.blink_text_visible:
                     continue
@@ -174,7 +221,8 @@ class Terminal(QAbstractScrollArea):
                     fg_color = self.theme[char.fg]
                 else:
                     fg_color = "#" + char.fg
-                painter.setPen(QColor(fg_color))
+                color.setRgb(int(fg_color[1:], base=16))
+                painter.setPen(color)
                 # 背景色
                 if char.bg == "default":
                     pass
@@ -182,17 +230,15 @@ class Terminal(QAbstractScrollArea):
                     bg_color = self.theme[char.bg]
                 else:
                     bg_color = "#" + char.bg
-                painter.setBackground(QBrush(QColor(bg_color)))
+                color.setRgb(int(bg_color[1:], base=16))
+                brush.setColor(color)
+                painter.setBackground(brush)
                 # 文本属性
                 font.setBold(char.bold)  # 加粗
                 font.setItalic(char.italics)  # 斜体
                 font.setUnderline(char.underscore)  # 下滑线
                 font.setStrikeOut(char.strikethrough)  # 删除线
                 painter.setFont(font)
-
-                painter.drawText(
-                    x * self.char_width, y + self.fontMetrics().ascent(), char.data
-                )
 
         # --- 绘制光标 ---
         all_lines = len(self._screen.all_buffer)
