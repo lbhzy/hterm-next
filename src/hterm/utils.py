@@ -32,7 +32,7 @@ def monitor(func):
         duration = (end_exec - start_exec) * 1000
 
         # 打印统计信息（单位：ms）
-        print(f"interval: {interval:.2f} ms cost: {duration:.2f} ms")
+        print(f"{func.__name__} interval: {interval:.2f}ms cost: {duration:.2f}ms")
 
         return result
 
