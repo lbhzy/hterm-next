@@ -49,7 +49,7 @@ class Terminal(QAbstractScrollArea):
         super().__init__(parent)
 
         self.theme: ThemeDict = DEFAULT_THEME
-        self._screen = pyte.Screen(80, 30, 99999)
+        self._screen = pyte.Screen(80, 30, 10000)
         self.stream = pyte.Stream(self._screen)
 
         self.set_theme(self.theme)
@@ -136,10 +136,9 @@ class Terminal(QAbstractScrollArea):
         # --- 绘制文本 ---
         text_visible = True
         start_line = self.verticalScrollBar().value()
+        screen_buffer = self._screen.get_screen_buffer(start_line)
         last_char = None
-        for i, line in enumerate(
-            self._screen.all_buffer[start_line : start_line + self._screen.lines]
-        ):
+        for i, line in enumerate(screen_buffer):
             y = i * self.line_height
 
             data = ""
@@ -230,7 +229,7 @@ class Terminal(QAbstractScrollArea):
                 painter.setFont(font)
 
         # --- 绘制光标 ---
-        all_lines = len(self._screen.all_buffer)
+        all_lines = len(self._screen.top_buffer) + self._screen.lines
         # 判断光标在可视范围
         if (
             start_line + self._screen.lines
