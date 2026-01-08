@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
 )
 
 from hterm.config import Config
+from hterm.ui.about_dialog import AboutDialog
 from hterm.ui.quick_bar import QuickBar
 from hterm.ui.session_list import SessionList
 
@@ -88,10 +89,10 @@ class MainWindow(QMainWindow):
         style_button.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
         toolbar.addWidget(style_button)
 
-        # 帮助按钮
+        # 关于按钮
         action = QAction(self)
         action.setIcon(qta.icon("mdi6.help-circle-outline"))
-        action.triggered.connect(lambda: print("help"))
+        action.triggered.connect(lambda: AboutDialog(self).show())
         toolbar.addAction(action)
 
         spacer = QWidget()
