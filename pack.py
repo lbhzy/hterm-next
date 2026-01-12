@@ -83,6 +83,7 @@ def generate_hook_env():
         }
     }
 
+    HOOK_ENV_PATH.parent.mkdir(parents=True, exist_ok=True)
     HOOK_ENV_PATH.touch(exist_ok=True)
     with HOOK_ENV_PATH.open("wb") as f:
         tomli_w.dump(hook_env, f)
