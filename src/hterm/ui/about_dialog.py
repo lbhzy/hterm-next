@@ -1,3 +1,4 @@
+import os
 import pathlib
 import sys
 
@@ -44,7 +45,9 @@ class AboutDialog(QDialog):
         layout.addWidget(title_label, 2)
 
         # 2. 作者和版权信息
-        info_label = QLabel("Version: 0.1.7")
+        info_label = QLabel(
+            f"版本: v{os.getenv('HTERM_VERSION')}\n构建日期: {os.getenv('HTERM_PACK_TIME')}"
+        )
         info_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(info_label)
 
