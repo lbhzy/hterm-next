@@ -15,7 +15,10 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-HTERM_DIR = pathlib.Path(__file__).resolve().parent.parent
+if os.getenv("HTERM_VERSION"):
+    HTERM_DIR = pathlib.Path(__file__).resolve().parent.parent.parent
+else:
+    HTERM_DIR = pathlib.Path(__file__).resolve().parent.parent
 LOGO_PATH = HTERM_DIR / "assets" / "icons" / "icon.png"
 
 
